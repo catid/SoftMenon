@@ -19,6 +19,87 @@ mean quality on all five datasets versus paper Menon, with wins on 377/442
 scenes; some scenes still favor Menon. [benchmarks.md](benchmarks.md) reports
 the selection process, regressions, raw results, and reproduction instructions.
 
+## How SoftMenon works
+
+Each Bayer pixel measures just one of red, green, or blue. SoftMenon fills the
+two missing channels in three stages. The diagrams use logical RGB names;
+the library writes interleaved **BGR**. Full paper Menon remains a separate
+algorithm and benchmark baseline.
+
+```mermaid
+flowchart LR
+    RAW["Bayer samples<br/>RGGB or BGGR"] --> G["1. Estimate missing green<br/>Blend horizontal and vertical candidates"]
+    G --> RGB["2. Estimate missing red and blue<br/>Interpolate differences from green"]
+    RGB --> M["3. Refine missing colors<br/>3 x 3 chroma medians"]
+    M --> OUT["BGR output<br/>Measured samples preserved"]
+```
+
+**1. Soft directional green.** At each measured red or blue pixel, estimate
+green horizontally and vertically. Each candidate averages the two adjacent
+green samples and adds a correction from the measured center color and its
+same-color neighbors two pixels away. Local color-difference scores `Sh` and
+`Sv` estimate how consistent each direction is. Lower scores receive more weight:
+
+```text
+G = clip(round(((Sv + 1)*Gh + (Sh + 1)*Gv) / (Sh + Sv + 2)))
+```
+
+This blend changes smoothly as the scores change. Measured green pixels pass
+through unchanged. Here is the sampling footprint around a measured red pixel;
+swap R and B for a measured blue pixel:
+
+```text
+ .   .   R   .   .
+ .   .   G   .   .
+ R   G  [R]  G   R
+ .   .   G   .   .
+ .   .   R   .   .
+
+Horizontal candidate: left/right G plus horizontal R correction
+Vertical candidate:   up/down G plus vertical R correction
+```
+
+**2. Initial color reconstruction.** Interpolate `R-G` and `B-G`, then add
+the center green value. At green pixels, use the two measured-color neighbors
+along that color's Bayer axis. At red or blue pixels, estimate the opposite
+color from diagonal pairs, choosing the more consistent pair or averaging
+when their scores are close. Clip the result to obtain a complete initial
+image `I`.
+
+**3. Median refinement.** In a 3×3 neighborhood, take the median of the nine
+`R-G` differences and, separately, the nine `B-G` differences. These medians
+can suppress isolated false-color estimates. Use the measured center channel
+to anchor the reconstruction:
+
+```mermaid
+flowchart TD
+    I["Unchanged initial image I"] --> MR["mR = median of R-G<br/>3 x 3 neighborhood"]
+    I --> MB["mB = median of B-G<br/>3 x 3 neighborhood"]
+    MR --> SITE{"Measured center channel?"}
+    MB --> SITE
+    SITE -->|Red| R["Keep measured R<br/>Gnew = clip(R - mR)<br/>Bnew = clip(Gnew + mB)"]
+    SITE -->|Green| G["Keep measured G<br/>Rnew = clip(G + mR)<br/>Bnew = clip(G + mB)"]
+    SITE -->|Blue| B["Keep measured B<br/>Gnew = clip(B - mB)<br/>Rnew = clip(Gnew + mR)"]
+```
+
+`clip` limits values to `[0,255]`; green is clipped **before** reconstructing
+the other missing color. Both medians read the same unchanged image, so an
+updated pixel never affects its neighbors during this pass. Neighborhoods at
+the image edge use reflect-101 reflection.
+
+The current version reuses the chroma medians to refine missing green as well
+as red/blue. Compared with the initial SoftMenon cleanup, this adds no median
+network, neighborhood loads, image pass, or GPU launch. Every measured Bayer
+sample remains exact. The local color-difference assumption can still fail
+on fine patterns or sharp color boundaries; see the measured regressions and
+exact refinement equations in [benchmarks.md](benchmarks.md#current-softmenon-reuse-chroma-medians-to-refine-green).
+
+The implementation is in [the initial CPU stages](cpu/cpu_kernel.cpp),
+[CPU median refinement](cpu/chroma_median.hpp), and
+[CUDA median refinement](c/src/chroma_median.cuh).
+See [next ablation ideas](research/softmenon-next-ablations.md) for the research
+review and proposed experiments beyond this version.
+
 ## Measured comparison
 
 442 images, both Bayer phases, full-image all-channel mean PSNR. Library PSNR

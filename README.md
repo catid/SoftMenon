@@ -36,8 +36,25 @@ flowchart LR
 **1. Soft directional green.** At each measured red or blue pixel, estimate
 green horizontally and vertically. Each candidate averages the two adjacent
 green samples and adds a correction from the measured center color and its
-same-color neighbors two pixels away. Local color-difference scores `Sh` and
-`Sv` estimate how consistent each direction is. Lower scores receive more weight:
+same-color neighbors two pixels away. Let `C0` be the measured red or blue
+center value; `GL, GR, GU, GD` are measured green one pixel left, right, up,
+and down. `CL2, CR2, CU2, CD2` are samples of the center's color two pixels
+away in those directions.
+
+`Gh` and `Gv` are the horizontal and vertical green candidates. `Sh` and `Sv`
+score their consistency with neighboring color/green pairs:
+
+```text
+Gh = round((GL + GR)/2) + round((2*C0 - CL2 - CR2)/4)
+Gv = round((GU + GD)/2) + round((2*C0 - CU2 - CD2)/4)
+
+Sh = abs((C0 - Gh) - (CL2 - GL)) + abs((C0 - Gh) - (CR2 - GR))
+Sv = abs((C0 - Gv) - (CU2 - GU)) + abs((C0 - Gv) - (CD2 - GD))
+```
+
+Each `round` rounds to the nearest integer, with half ties toward positive
+infinity; the two terms in each candidate are rounded separately. Lower scores
+receive more weight, so `Sv + 1` weights `Gh` and `Sh + 1` weights `Gv`:
 
 ```text
 G = clip(round(((Sv + 1)*Gh + (Sh + 1)*Gv) / (Sh + Sv + 2)))
@@ -58,12 +75,62 @@ Horizontal candidate: left/right G plus horizontal R correction
 Vertical candidate:   up/down G plus vertical R correction
 ```
 
-**2. Initial color reconstruction.** Interpolate `R-G` and `B-G`, then add
-the center green value. At green pixels, use the two measured-color neighbors
-along that color's Bayer axis. At red or blue pixels, estimate the opposite
-color from diagonal pairs, choosing the more consistent pair or averaging
-when their scores are close. Clip the result to obtain a complete initial
-image `I`.
+**2. Initial color reconstruction.** With green available at every pixel,
+estimate missing red and blue through their differences from green. For a
+target color `C` (red or blue), each measured-color neighbor contributes
+`D = C - G`, using the green estimate at that same neighbor. Interpolate `D`,
+then add the center green `G0`:
+
+```mermaid
+flowchart TD
+    N["Measured target-color neighbors"] --> D["Subtract each neighbor's green<br/>D = C - G"]
+    D --> SITE{"Center's measured color"}
+    SITE -->|Green| AX["Average two axial differences<br/>Horizontal or vertical Bayer pair"]
+    SITE -->|Other color| DI["Form two diagonal pair estimates<br/>Choose or average by consistency"]
+    AX --> C["Missing C = clip(G0 + estimated D)"]
+    DI --> C
+    C --> I["Complete initial image I<br/>Keep the measured center channel"]
+```
+
+At a **measured-green pixel**, red neighbors lie along one axis and blue
+neighbors along the other. For this Bayer position:
+
+```text
+          B_up
+ R_left  [G0]  R_right
+         B_down
+
+R = clip(G0 + round(((R_left - G_left) + (R_right - G_right))/2))
+B = clip(G0 + round(((B_up   - G_up)   + (B_down  - G_down ))/2))
+```
+
+`G_left`, for example, is the green reconstructed at the measured `R_left`
+site in stage 1. At the other green position, exchange the red/blue axes.
+
+At a **measured-red pixel**, the four nearest measured blue samples are
+diagonal. At a measured-blue pixel, exchange red and blue in this diagram:
+
+```text
+ B_NW             B_NE
+          [R0]
+ B_SW             B_SE
+
+D_NW = B_NW - G_NW        D_NE = B_NE - G_NE
+D_SW = B_SW - G_SW        D_SE = B_SE - G_SE
+
+E1 = round((D_NW + D_SE)/2)    S1 = abs(D_NW - D_SE)
+E2 = round((D_NE + D_SW)/2)    S2 = abs(D_NE - D_SW)
+
+If abs(S1 - S2) <= 26: D_est = round((E1 + E2)/2)
+Otherwise:             D_est = E1 if S1 <= S2, else E2
+
+B = clip(G0 + D_est)
+```
+
+The 26-DN threshold belongs to this diagonal decision. Both pair estimates
+are rounded before the close-score average; measured red `R0` stays exact.
+All missing red/blue values are clipped to `[0,255]`, producing the complete
+initial image `I` used by the next stage.
 
 **3. Median refinement.** In a 3×3 neighborhood, take the median of the nine
 `R-G` differences and, separately, the nine `B-G` differences. These medians

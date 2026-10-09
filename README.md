@@ -13,11 +13,10 @@ and API names are retained.
 - **SoftMenon** — soft green decisions followed by a 3×3 chroma-median
   refinement of missing green and red/blue, preserving every measured sample.
 
-The revised SoftMenon scores **0.564 dB above full paper Menon** and
-**0.881 dB above initial SoftMenon** on our 442-image benchmark. It improves
-mean quality on all five datasets versus paper Menon, with wins on 377/442
+SoftMenon scores **0.564 dB above full paper Menon** on our 442-image benchmark.
+It improves mean quality on all five datasets versus paper Menon, with wins on 377/442
 scenes; some scenes still favor Menon. [benchmarks.md](benchmarks.md) reports
-the selection process, regressions, raw results, and reproduction instructions.
+the evaluation protocol, regressions, raw results, and reproduction instructions.
 
 ## How SoftMenon works
 
@@ -87,12 +86,11 @@ the other missing color. Both medians read the same unchanged image, so an
 updated pixel never affects its neighbors during this pass. Neighborhoods at
 the image edge use reflect-101 reflection.
 
-The current version reuses the chroma medians to refine missing green as well
-as red/blue. Compared with the initial SoftMenon cleanup, this adds no median
-network, neighborhood loads, image pass, or GPU launch. Every measured Bayer
-sample remains exact. The local color-difference assumption can still fail
+SoftMenon uses the same chroma medians to refine missing green and red/blue
+in a single cleanup pass. Every measured Bayer sample remains exact.
+The local color-difference assumption can still fail
 on fine patterns or sharp color boundaries; see the measured regressions and
-exact refinement equations in [benchmarks.md](benchmarks.md#current-softmenon-reuse-chroma-medians-to-refine-green).
+exact refinement equations in [benchmarks.md](benchmarks.md#softmenon-refinement).
 
 The implementation is in [the initial CPU stages](cpu/cpu_kernel.cpp),
 [CPU median refinement](cpu/chroma_median.hpp), and
@@ -112,24 +110,18 @@ included. These are workstation results, not Jetson measurements.
 | Malvar 2004 | 33.963 | 0.638 | 0.352 |
 | Menon 2007, full paper | 36.928 | 1.204 | 0.541 |
 | SoftMenon | **37.493** | **0.469** | 0.368 |
-| Legacy custom Menon control | 36.009 | 1.014 | 0.358 |
-| Legacy + soft green only | 36.379 | 0.322 | 0.359 |
 | OpenCV bilinear | 28.914 | 0.310 | — |
 | OpenCV edge-aware | 28.927 | 0.328 | — |
 | OpenCV VNG, registration corrected | 33.509 | 6.748 | — |
 | NPP CFA reconstruction | 29.103 | — | 0.406 |
 
-In the matched initial-versus-current SoftMenon test, CPU latency improves
-**0.539 → 0.497 ms** with eight workers and **3.251 → 2.774 ms** with one.
-CUDA is unchanged at **0.367 ms**; forced AVX2 dispatch is also effectively flat.
-The quality improvement reuses existing medians, while AVX2/AVX512 green
-optimizations remove calculations at already measured green sites.
+SoftMenon's AVX2/AVX512 green kernels compute estimates only at pixels where
+green is missing. Its cleanup reuses two chroma medians for all missing colors.
 
-The table uses a separate fresh all-method CPU/CUDA run; external adapter
-timings are retained from the earlier run on the same workstation. Paper
-Menon's earlier exact CPU optimization reduced its latency by 12.63×.
+The table uses an all-method CPU/CUDA run; external adapter
+timings come from a separate run on the same workstation.
 Dataset splits, hashes, decoder rules, baseline validation, timing
-scope, external adapter details, all ablation results, and reproduction commands
+scope, external adapter details, validation results, and reproduction commands
 are in [benchmarks.md](benchmarks.md). Historical blue-only PSNR figures have
 been withdrawn; these scores include all three channels.
 
@@ -168,8 +160,8 @@ See [CPU usage](cpu/README.md).
 The [CUDA C API](c/include/debayer.h) accepts device buffers. Its workspace
 entry points avoid per-frame allocation; the [C++ wrapper](cpp/include/debayer_cpp.h)
 manages transfers and reusable scratch. The [Rust API](rust/src/lib.rs) exposes
-`SoftMenonRggb2Bgr` and `SoftMenonBggr2Bgr`. Existing Menon entry points now implement
-the complete paper baseline; they intentionally differ from the old approximation.
+`SoftMenonRggb2Bgr` and `SoftMenonBggr2Bgr`. Menon entry points implement
+the complete paper baseline.
 
 `nix develop` provides the original development environment. For dataset download
 and standalone CPU/CUDA benchmark builds, follow [benchmarks.md](benchmarks.md).

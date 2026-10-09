@@ -21,8 +21,7 @@ import numpy as np
 from PIL import Image, features
 
 ROOT = Path(__file__).resolve().parents[1]
-METHODS = {"bilinear": 1, "malvar": 2, "menon2007": 3, "softmenon": 4,
-           "legacy_menon": 5, "soft_green": 6}
+METHODS = {"bilinear": 1, "malvar": 2, "menon2007": 3, "softmenon": 4}
 BACKEND_METHODS = {"cpu": METHODS, "cuda": METHODS,
     "opencv": {"opencv_bilinear": 1, "opencv_ea": 2, "opencv_vng": 3},
     "npp": {"npp_cfa": 1}}

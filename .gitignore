@@ -1,0 +1,12 @@
+result
+build
+
+.direnv
+
+# Local datasets, research notes, and full experiment artifacts.
+/datasets/
+/research/
+/validation/
+/benchmark/kodak/
+/rust/target/
+__pycache__/

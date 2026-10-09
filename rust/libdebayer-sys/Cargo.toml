@@ -1,0 +1,16 @@
+[package]
+name = "libdebayer-sys"
+version = "0.2.0"
+edition = "2021"
+license = "MPL-2.0"
+description = "unsafe sys crate to the libdebayer C library"
+homepage = "https://github.com/catid/SoftMenon"
+repository = "https://github.com/catid/SoftMenon/tree/main/rust/libdebayer-sys"
+readme = "../../README.md"
+
+[dependencies]
+
+[build-dependencies]
+anyhow = "1.0.86"
+bindgen = "0.70.1"
+pkg-config = "0.3.30"

@@ -1,0 +1,19 @@
+[package]
+name = "libdebayer"
+version = "0.3.0"
+edition = "2021"
+license = "MPL-2.0"
+description = "debayer images with CUDA"
+homepage = "https://github.com/catid/SoftMenon"
+repository = "https://github.com/catid/SoftMenon/tree/main/rust"
+readme = "../README.md"
+
+[dependencies]
+libdebayer-sys = { version = "0.2.0", path = "libdebayer-sys" }
+opencv = { version = "0.92.3", default-features = false, features = ["clang-runtime", "imgcodecs"] }
+thiserror = "1.0.63"
+
+[dev-dependencies]
+anyhow = "1.0.87"
+defvar = "0.1.0"
+

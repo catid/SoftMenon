@@ -117,9 +117,14 @@ PSNR deltas are labeled as such, while MSE and win/loss counts retain every case
 - **Menon 2007:** full DDFAPD, including its three refinement stages, following
   [Menon, Andriani and Calvagno, TIP 2007](https://doi.org/10.1109/TIP.2006.884928)
   and the [pinned Colour implementation](https://github.com/colour-science/colour-demosaicing/blob/f4f67d46c8a803164e9bc4b36d828931e6377e7c/colour_demosaicing/bayer/demosaicing/menon2007.py).
-- **SoftMenon:** Hamilton–Adams directional green estimates, neighborhood
-  consistency scores from colocated color differences, and squared soft weights.
-  Initial red/blue reconstruction interpolates differences from green. A 3×3
+- **SoftMenon:** Hamilton–Adams directional green estimates with three-quarter
+  correction strength, neighborhood consistency scores from colocated color
+  differences, and squared soft weights. Each estimate rounds its adjacent-green
+  average and correction separately, including estimates used for neighboring
+  color differences. Initial red/blue reconstruction interpolates differences
+  from green. Diagonal pairs use equal weights for a score gap up to 16 DN,
+  three-to-one weights up to 64 DN, and the more consistent pair above 64 DN;
+  pair estimates are rounded before blending. A 3×3
   chroma-median refinement then reconstructs missing green from the measured
   red/blue sample and reconstructs the other missing color. Every measured CFA
   sample is preserved. [The complete equations and diagrams](README.md#how-softmenon-works)
@@ -255,20 +260,20 @@ Full-image mean PSNR, averaging both CFA phases per source image:
 
 | Dataset / input cohort | Full paper Menon | SoftMenon | SoftMenon − paper |
 |---|---:|---:|---:|
-| Kodak24 | 39.2055 | **39.9567** | +0.7512 |
-| McMaster | 34.2268 | **34.4662** | +0.2395 |
-| Urban100 | 33.6647 | **34.2896** | +0.6250 |
-| DIV2K validation | 38.3940 | **38.9720** | +0.5780 |
-| BSDS500 test | 37.7975 | **39.0616** | +1.2641 |
-| All 442, original | 36.9285 | **37.8231** | +0.8947 |
-| All 442, Inset16 | 36.7859 | **37.6995** | +0.9136 |
+| Kodak24 | 39.2055 | **39.9900** | +0.7844 |
+| McMaster | 34.2268 | **34.7665** | +0.5398 |
+| Urban100 | 33.6647 | **34.5204** | +0.8558 |
+| DIV2K validation | 38.3940 | **39.1488** | +0.7548 |
+| BSDS500 test | 37.7975 | **39.0978** | +1.3004 |
+| All 442, original | 36.9285 | **37.9458** | +1.0174 |
+| All 442, Inset16 | 36.7859 | **37.8218** | +1.0359 |
 
-SoftMenon wins on **411 of 442 scenes** and loses on 31 against full paper
+SoftMenon wins on **429 of 442 scenes** and loses on 13 against full paper
 Menon, averaging the two phases per scene. Its largest loss is Urban100
-`img_055_SRF_2_HR.png`, **−1.6899 dB**. Pooled PSNR improves **0.5736 dB**;
-Interior8 and Border8 mean PSNR improve **0.9081 dB** and **0.7576 dB**.
+`img_055_SRF_2_HR.png`, **−1.4951 dB**. Pooled PSNR improves **0.7268 dB**;
+Interior8 and Border8 mean PSNR improve **1.0317 dB** and **0.8720 dB**.
 
-The pointwise 95% bootstrap interval for the mean gain is **[0.8411, 0.9496] dB**,
+The pointwise 95% bootstrap interval for the mean gain is **[0.9715, 1.0632] dB**,
 using 10,000 dataset-stratified source-image resamples with both phases kept
 together (seed 20261010). This interval describes this evaluation corpus and
 does not account for parameter selection.
@@ -294,8 +299,8 @@ in the timing protocol above.
 
 | SoftMenon path | Latency ms | FPS |
 |---|---:|---:|
-| CPU, eight workers, native AVX512 dispatch | 0.477 | 2,095 |
-| CUDA, synchronous host-to-host | 0.371 | 2,693 |
+| CPU, eight workers, native AVX512 dispatch | 0.493 | 2,027 |
+| CUDA, synchronous host-to-host | 0.374 | 2,674 |
 
 FPS is `1000 / mean of phase-median milliseconds`; it describes repeated
 synchronous calls under this protocol.

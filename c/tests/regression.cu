@@ -79,11 +79,18 @@ int expected(const std::vector<uint8_t>& raw, int width, int height, int x, int 
 std::vector<uint8_t> softmenon_reference(const std::vector<uint8_t>& raw,
                                        int width, int height, bool bggr) {
     auto clip = [](int value) { return std::max(0, std::min(255, value)); };
+    auto nearest = [](int numerator, int denominator) {
+        // Signed nearest integer with ties upward, expressed without shifts.
+        const int biased = numerator + denominator / 2;
+        return biased >= 0 ? biased / denominator :
+            -((-biased + denominator - 1) / denominator);
+    };
     auto candidate = [&](int x, int y, bool vertical) {
         const int dx = vertical ? 0 : 1, dy = vertical ? 1 : 0;
+        const int curvature = 2 * sample(raw,width,height,x,y) -
+            sample(raw,width,height,x-2*dx,y-2*dy) - sample(raw,width,height,x+2*dx,y+2*dy);
         return (sample(raw,width,height,x-dx,y-dy) + sample(raw,width,height,x+dx,y+dy) + 1) / 2 +
-            ((2*sample(raw,width,height,x,y) - sample(raw,width,height,x-2*dx,y-2*dy) -
-              sample(raw,width,height,x+2*dx,y+2*dy) + 2) >> 2);
+            nearest(3 * curvature, 16);
     };
     auto difference = [&](int x, int y, bool vertical) {
         return sample(raw,width,height,x,y) - candidate(x,y,vertical);
@@ -120,9 +127,10 @@ std::vector<uint8_t> softmenon_reference(const std::vector<uint8_t>& raw,
         int delta;
         if (native!=1) {
             const int ul=d(-1,-1),ur=d(1,-1),dl=d(-1,1),dr=d(1,1);
-            const int a=(ul+dr+1)>>1,b=(ur+dl+1)>>1;
+            const int a=nearest(ul+dr,2),b=nearest(ur+dl,2);
             const int ah=std::abs(ul-dr),av=std::abs(ur-dl);
-            delta=std::abs(ah-av)<=26 ? (a+b+1)>>1 : ah<=av ? a : b;
+            const int gap=std::abs(ah-av),best=ah<=av?a:b,other=ah<=av?b:a;
+            delta=gap<=16 ? nearest(a+b,2) : gap<=64 ? nearest(3*best+other,4) : best;
         } else {
             const bool horizontal=color(x-1,y,bggr)==c;
             delta=(d(horizontal?-1:0,horizontal?0:-1)+d(horizontal?1:0,horizontal?0:1)+1)>>1;

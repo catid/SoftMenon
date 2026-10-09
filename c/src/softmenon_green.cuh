@@ -1,10 +1,12 @@
 #pragma once
 
 namespace softmenon_green {
+// Green candidates use a 3/4-strength Hamilton-Adams correction.
+// Both terms round separately, including every candidate used by the scores.
 // Candidate reconstruction reaches two RAW samples along the selected axis.
 __device__ __forceinline__ int candidate(const uint8_t* p, ptrdiff_t axis) {
     return ((int(p[-axis]) + p[axis] + 1) >> 1) +
-        ((2 * int(p[0]) - p[-2 * axis] - p[2 * axis] + 2) >> 2);
+        ((6 * (2 * int(p[0]) - p[-2 * axis] - p[2 * axis]) + 16) >> 5);
 }
 
 __device__ __forceinline__ int difference(const uint8_t* p, ptrdiff_t axis) {

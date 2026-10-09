@@ -32,8 +32,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 884,
-        "mean_psnr": 37.823137995749875,
-        "pooled_psnr": 36.40357424186917
+        "mean_psnr": 37.94581366056668,
+        "pooled_psnr": 36.55671394156818
       },
       {
         "dataset": "bsds500",
@@ -64,8 +64,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 400,
-        "mean_psnr": 39.06155441357855,
-        "pooled_psnr": 38.00796973313196
+        "mean_psnr": 39.09783686938455,
+        "pooled_psnr": 37.98331675687729
       },
       {
         "dataset": "div2k",
@@ -96,8 +96,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 200,
-        "mean_psnr": 38.97199421515501,
-        "pooled_psnr": 36.68462401372957
+        "mean_psnr": 39.14880839072214,
+        "pooled_psnr": 36.837336468639805
       },
       {
         "dataset": "kodak24",
@@ -128,8 +128,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 48,
-        "mean_psnr": 39.95674765451795,
-        "pooled_psnr": 39.211559911146416
+        "mean_psnr": 39.98995734756236,
+        "pooled_psnr": 39.202940631427225
       },
       {
         "dataset": "mcmaster",
@@ -160,8 +160,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 36,
-        "mean_psnr": 34.46622636628985,
-        "pooled_psnr": 33.129297097245704
+        "mean_psnr": 34.766543198993865,
+        "pooled_psnr": 33.43772337784949
       },
       {
         "dataset": "urban100",
@@ -192,8 +192,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 200,
-        "mean_psnr": 34.28962671588588,
-        "pooled_psnr": 32.635988638381114
+        "mean_psnr": 34.5204467109796,
+        "pooled_psnr": 32.86226269522868
       },
       {
         "dataset": "all",
@@ -224,8 +224,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 884,
-        "mean_psnr": 37.69949982617464,
-        "pooled_psnr": 36.37396145054423
+        "mean_psnr": 37.821795515579595,
+        "pooled_psnr": 36.52681127988021
       },
       {
         "dataset": "bsds500",
@@ -256,8 +256,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 400,
-        "mean_psnr": 38.852027794592665,
-        "pooled_psnr": 37.80840322415752
+        "mean_psnr": 38.888067840195724,
+        "pooled_psnr": 37.78250503082623
       },
       {
         "dataset": "div2k",
@@ -288,8 +288,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 200,
-        "mean_psnr": 38.92336401023251,
-        "pooled_psnr": 36.65354892996602
+        "mean_psnr": 39.10003397130416,
+        "pooled_psnr": 36.80545688539095
       },
       {
         "dataset": "kodak24",
@@ -320,8 +320,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 48,
-        "mean_psnr": 40.00436105699281,
-        "pooled_psnr": 39.218558681044556
+        "mean_psnr": 40.04003218686412,
+        "pooled_psnr": 39.20735862701363
       },
       {
         "dataset": "mcmaster",
@@ -352,8 +352,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 36,
-        "mean_psnr": 34.378886715755904,
-        "pooled_psnr": 33.007836698131015
+        "mean_psnr": 34.67970296315708,
+        "pooled_psnr": 33.31863077303683
       },
       {
         "dataset": "urban100",
@@ -384,8 +384,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 200,
-        "mean_psnr": 34.21512336975972,
-        "pooled_psnr": 32.51746830413272
+        "mean_psnr": 34.444212268950515,
+        "pooled_psnr": 32.746622610997235
       }
     ],
     "cuda": [
@@ -418,8 +418,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 884,
-        "mean_psnr": 37.823137995749875,
-        "pooled_psnr": 36.40357424186917
+        "mean_psnr": 37.94581366056668,
+        "pooled_psnr": 36.55671394156818
       },
       {
         "dataset": "bsds500",
@@ -450,8 +450,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 400,
-        "mean_psnr": 39.06155441357855,
-        "pooled_psnr": 38.00796973313196
+        "mean_psnr": 39.09783686938455,
+        "pooled_psnr": 37.98331675687729
       },
       {
         "dataset": "div2k",
@@ -482,8 +482,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 200,
-        "mean_psnr": 38.97199421515501,
-        "pooled_psnr": 36.68462401372957
+        "mean_psnr": 39.14880839072214,
+        "pooled_psnr": 36.837336468639805
       },
       {
         "dataset": "kodak24",
@@ -514,8 +514,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 48,
-        "mean_psnr": 39.95674765451795,
-        "pooled_psnr": 39.211559911146416
+        "mean_psnr": 39.98995734756236,
+        "pooled_psnr": 39.202940631427225
       },
       {
         "dataset": "mcmaster",
@@ -546,8 +546,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 36,
-        "mean_psnr": 34.46622636628985,
-        "pooled_psnr": 33.129297097245704
+        "mean_psnr": 34.766543198993865,
+        "pooled_psnr": 33.43772337784949
       },
       {
         "dataset": "urban100",
@@ -578,8 +578,8 @@
         "method": "softmenon",
         "inset": 0,
         "pairs": 200,
-        "mean_psnr": 34.28962671588588,
-        "pooled_psnr": 32.635988638381114
+        "mean_psnr": 34.5204467109796,
+        "pooled_psnr": 32.86226269522868
       },
       {
         "dataset": "all",
@@ -610,8 +610,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 884,
-        "mean_psnr": 37.69949982617464,
-        "pooled_psnr": 36.37396145054423
+        "mean_psnr": 37.821795515579595,
+        "pooled_psnr": 36.52681127988021
       },
       {
         "dataset": "bsds500",
@@ -642,8 +642,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 400,
-        "mean_psnr": 38.852027794592665,
-        "pooled_psnr": 37.80840322415752
+        "mean_psnr": 38.888067840195724,
+        "pooled_psnr": 37.78250503082623
       },
       {
         "dataset": "div2k",
@@ -674,8 +674,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 200,
-        "mean_psnr": 38.92336401023251,
-        "pooled_psnr": 36.65354892996602
+        "mean_psnr": 39.10003397130416,
+        "pooled_psnr": 36.80545688539095
       },
       {
         "dataset": "kodak24",
@@ -706,8 +706,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 48,
-        "mean_psnr": 40.00436105699281,
-        "pooled_psnr": 39.218558681044556
+        "mean_psnr": 40.04003218686412,
+        "pooled_psnr": 39.20735862701363
       },
       {
         "dataset": "mcmaster",
@@ -738,8 +738,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 36,
-        "mean_psnr": 34.378886715755904,
-        "pooled_psnr": 33.007836698131015
+        "mean_psnr": 34.67970296315708,
+        "pooled_psnr": 33.31863077303683
       },
       {
         "dataset": "urban100",
@@ -770,8 +770,8 @@
         "method": "softmenon",
         "inset": 16,
         "pairs": 200,
-        "mean_psnr": 34.21512336975972,
-        "pooled_psnr": 32.51746830413272
+        "mean_psnr": 34.444212268950515,
+        "pooled_psnr": 32.746622610997235
       }
     ],
     "opencv": [
@@ -1170,61 +1170,61 @@
       "images": 442,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.8946867086191739,
+      "mean_gain_db": 1.0173623734359682,
       "region_mean_gain_db": {
-        "full": 0.8946867086191739,
-        "interior8": 0.9081107827021955,
-        "border8": 0.7576046390030629
+        "full": 1.0173623734359682,
+        "interior8": 1.031666246184875,
+        "border8": 0.8719918599990385
       },
-      "wins": 411,
+      "wins": 429,
       "ties": 0,
-      "losses": 31,
+      "losses": 13,
       "bootstrap95_mean_gain_db": [
-        0.8410602892967638,
-        0.9496198943102383
+        0.971532476668941,
+        1.0632420046522866
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
-          "gain_db": -1.6899231582095204
-        },
-        {
-          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
-          "gain_db": -0.6752771703386315
+          "gain_db": -1.4951111173573324
         },
         {
           "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
-          "gain_db": -0.668959363885925
+          "gain_db": -0.5267132205725851
         },
         {
           "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
-          "gain_db": -0.6516053729380342
+          "gain_db": -0.45595409802283626
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.3685210251801898
         },
         {
           "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
-          "gain_db": -0.5323028385520701
+          "gain_db": -0.21641528168807156
         }
       ],
       "best5": [
         {
-          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
-          "gain_db": 3.2716553092431404
+          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
+          "gain_db": 3.4175017223400985
         },
         {
           "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
-          "gain_db": 2.7330581582121383
+          "gain_db": 3.2568643621490523
         },
         {
-          "path": "datasets/reference/images/bsds500/test/92014.jpg",
-          "gain_db": 2.519640723021844
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.2074994461477644
         },
         {
-          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
-          "gain_db": 2.4895471563053775
+          "path": "datasets/reference/images/urban100/img_081_SRF_2_HR.png",
+          "gain_db": 2.8292786401280736
         },
         {
-          "path": "datasets/reference/images/bsds500/test/346016.jpg",
-          "gain_db": 2.3329562182645613
+          "path": "datasets/reference/images/urban100/img_072_SRF_2_HR.png",
+          "gain_db": 2.339143155600503
         }
       ]
     },
@@ -1234,61 +1234,61 @@
       "images": 200,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 1.264087925088084,
+      "mean_gain_db": 1.3003703808940883,
       "region_mean_gain_db": {
-        "full": 1.264087925088084,
-        "interior8": 1.2773524268071212,
-        "border8": 1.0529936013848962
+        "full": 1.3003703808940883,
+        "interior8": 1.3146206880716413,
+        "border8": 1.0945796105444232
       },
-      "wins": 198,
+      "wins": 199,
       "ties": 0,
-      "losses": 2,
+      "losses": 1,
       "bootstrap95_mean_gain_db": [
-        1.191889036605399,
-        1.3355226098085053
+        1.2509406971764299,
+        1.3492440366729146
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/bsds500/test/43051.jpg",
-          "gain_db": -0.31425701658913496
+          "gain_db": -0.09751250097118458
         },
         {
           "path": "datasets/reference/images/bsds500/test/388006.jpg",
-          "gain_db": -0.104168138435206
+          "gain_db": 0.06107279047038716
         },
         {
           "path": "datasets/reference/images/bsds500/test/10081.jpg",
-          "gain_db": 0.0375604395439737
+          "gain_db": 0.24994561972967944
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/196027.jpg",
+          "gain_db": 0.4555400079484997
         },
         {
           "path": "datasets/reference/images/bsds500/test/81066.jpg",
-          "gain_db": 0.18318926759388532
-        },
-        {
-          "path": "datasets/reference/images/bsds500/test/104055.jpg",
-          "gain_db": 0.24266846531896036
+          "gain_db": 0.4671766486943234
         }
       ],
       "best5": [
         {
           "path": "datasets/reference/images/bsds500/test/92014.jpg",
-          "gain_db": 2.519640723021844
-        },
-        {
-          "path": "datasets/reference/images/bsds500/test/346016.jpg",
-          "gain_db": 2.3329562182645613
+          "gain_db": 2.1579510047205233
         },
         {
           "path": "datasets/reference/images/bsds500/test/101027.jpg",
-          "gain_db": 2.3158900778402547
+          "gain_db": 1.9768084732027305
         },
         {
-          "path": "datasets/reference/images/bsds500/test/267036.jpg",
-          "gain_db": 2.2783443424422813
+          "path": "datasets/reference/images/bsds500/test/77062.jpg",
+          "gain_db": 1.95966149580212
         },
         {
-          "path": "datasets/reference/images/bsds500/test/207049.jpg",
-          "gain_db": 2.18729841349122
+          "path": "datasets/reference/images/bsds500/test/134067.jpg",
+          "gain_db": 1.9163710435252064
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/2018.jpg",
+          "gain_db": 1.8981011813880926
         }
       ]
     },
@@ -1298,61 +1298,61 @@
       "images": 100,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.5779779238500125,
+      "mean_gain_db": 0.7547920994171392,
       "region_mean_gain_db": {
-        "full": 0.5779779238500125,
-        "interior8": 0.5778973660426471,
-        "border8": 0.5570108281249774
+        "full": 0.7547920994171392,
+        "interior8": 0.7550281669225226,
+        "border8": 0.7210166109275828
       },
-      "wins": 89,
+      "wins": 98,
       "ties": 0,
-      "losses": 11,
+      "losses": 2,
       "bootstrap95_mean_gain_db": [
-        0.4797072220224418,
-        0.6804930851581777
+        0.6775412371300863,
+        0.8336263785244461
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/div2k/validation/0885.png",
-          "gain_db": -0.40741577531214546
-        },
-        {
-          "path": "datasets/reference/images/div2k/validation/0892.png",
-          "gain_db": -0.31056973516908215
+          "gain_db": -0.21075181619657535
         },
         {
           "path": "datasets/reference/images/div2k/validation/0818.png",
-          "gain_db": -0.2476042848543898
+          "gain_db": -0.13661465433052555
         },
         {
-          "path": "datasets/reference/images/div2k/validation/0833.png",
-          "gain_db": -0.21341364249228434
+          "path": "datasets/reference/images/div2k/validation/0892.png",
+          "gain_db": 0.016381447137117533
         },
         {
           "path": "datasets/reference/images/div2k/validation/0806.png",
-          "gain_db": -0.20274787422697216
+          "gain_db": 0.053507076644280005
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0867.png",
+          "gain_db": 0.0656138402853621
         }
       ],
       "best5": [
         {
           "path": "datasets/reference/images/div2k/validation/0829.png",
-          "gain_db": 2.1875333326265753
+          "gain_db": 1.8493244173310437
         },
         {
           "path": "datasets/reference/images/div2k/validation/0857.png",
-          "gain_db": 2.1028462393949496
+          "gain_db": 1.7997873697406064
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0840.png",
+          "gain_db": 1.649191893398303
         },
         {
           "path": "datasets/reference/images/div2k/validation/0855.png",
-          "gain_db": 1.7573385684613214
+          "gain_db": 1.638809096957207
         },
         {
           "path": "datasets/reference/images/div2k/validation/0862.png",
-          "gain_db": 1.7053045151598312
-        },
-        {
-          "path": "datasets/reference/images/div2k/validation/0881.png",
-          "gain_db": 1.4314088093513426
+          "gain_db": 1.5173865041440884
         }
       ]
     },
@@ -1362,61 +1362,61 @@
       "images": 24,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.7512025549059375,
+      "mean_gain_db": 0.7844122479503502,
       "region_mean_gain_db": {
-        "full": 0.7512025549059375,
-        "interior8": 0.8468454944958063,
-        "border8": -0.11137209962919226
+        "full": 0.7844122479503502,
+        "interior8": 0.8818405561845845,
+        "border8": -0.04073127484122111
       },
-      "wins": 22,
+      "wins": 23,
       "ties": 0,
-      "losses": 2,
+      "losses": 1,
       "bootstrap95_mean_gain_db": [
-        0.5646502822328066,
-        0.9462866528167947
+        0.6457080119746993,
+        0.9254016805750391
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/kodak24/kodim23.png",
-          "gain_db": -0.30744835630730805
+          "gain_db": -0.0001358741623072035
         },
         {
           "path": "datasets/reference/images/kodak24/kodim02.png",
-          "gain_db": -0.10036078672180793
-        },
-        {
-          "path": "datasets/reference/images/kodak24/kodim07.png",
-          "gain_db": 0.3567602612780796
+          "gain_db": 0.09792598421178411
         },
         {
           "path": "datasets/reference/images/kodak24/kodim12.png",
-          "gain_db": 0.38119083995620784
+          "gain_db": 0.4036308643965434
         },
         {
-          "path": "datasets/reference/images/kodak24/kodim15.png",
-          "gain_db": 0.4840217319511382
+          "path": "datasets/reference/images/kodak24/kodim20.png",
+          "gain_db": 0.551541347547861
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim10.png",
+          "gain_db": 0.5612375176324704
         }
       ],
       "best5": [
         {
           "path": "datasets/reference/images/kodak24/kodim13.png",
-          "gain_db": 1.8556072413811897
+          "gain_db": 1.4976342135255472
         },
         {
           "path": "datasets/reference/images/kodak24/kodim01.png",
-          "gain_db": 1.663756359817107
+          "gain_db": 1.4328274027951196
         },
         {
           "path": "datasets/reference/images/kodak24/kodim18.png",
-          "gain_db": 1.3717290165812415
+          "gain_db": 1.2731641353997887
         },
         {
           "path": "datasets/reference/images/kodak24/kodim21.png",
-          "gain_db": 1.226517424803017
+          "gain_db": 1.207409654470787
         },
         {
           "path": "datasets/reference/images/kodak24/kodim08.png",
-          "gain_db": 1.1133622067238171
+          "gain_db": 1.0237936912261958
         }
       ]
     },
@@ -1426,61 +1426,61 @@
       "images": 18,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.23946347001550816,
+      "mean_gain_db": 0.5397803027195187,
       "region_mean_gain_db": {
-        "full": 0.23946347001550816,
-        "interior8": 0.2367188308115805,
-        "border8": 0.28058493447379274
+        "full": 0.5397803027195187,
+        "interior8": 0.5391669018436026,
+        "border8": 0.5350635870735397
       },
-      "wins": 15,
+      "wins": 18,
       "ties": 0,
-      "losses": 3,
+      "losses": 0,
       "bootstrap95_mean_gain_db": [
-        0.12139957145417989,
-        0.3911604084376447
+        0.41157756165621484,
+        0.6890001837762058
       ],
       "worst5": [
         {
+          "path": "datasets/reference/images/mcmaster/2.tif",
+          "gain_db": 0.1763230642707292
+        },
+        {
           "path": "datasets/reference/images/mcmaster/6.tif",
-          "gain_db": -0.20758217802692513
+          "gain_db": 0.2083155216728123
         },
         {
           "path": "datasets/reference/images/mcmaster/13.tif",
-          "gain_db": -0.10072881368862241
+          "gain_db": 0.23129462439326076
         },
         {
-          "path": "datasets/reference/images/mcmaster/2.tif",
-          "gain_db": -0.02748705184607303
+          "path": "datasets/reference/images/mcmaster/18.tif",
+          "gain_db": 0.2791656345071232
         },
         {
           "path": "datasets/reference/images/mcmaster/1.tif",
-          "gain_db": 0.040846199614117396
-        },
-        {
-          "path": "datasets/reference/images/mcmaster/5.tif",
-          "gain_db": 0.09371779047964779
+          "gain_db": 0.303456608904197
         }
       ],
       "best5": [
         {
-          "path": "datasets/reference/images/mcmaster/7.tif",
-          "gain_db": 1.21581995189743
+          "path": "datasets/reference/images/mcmaster/4.tif",
+          "gain_db": 1.3424181778702113
         },
         {
-          "path": "datasets/reference/images/mcmaster/3.tif",
-          "gain_db": 0.4119333936454481
+          "path": "datasets/reference/images/mcmaster/7.tif",
+          "gain_db": 1.0816286278450633
         },
         {
           "path": "datasets/reference/images/mcmaster/9.tif",
-          "gain_db": 0.3906690525500629
+          "gain_db": 0.8741427327320928
         },
         {
-          "path": "datasets/reference/images/mcmaster/11.tif",
-          "gain_db": 0.31781635374980866
+          "path": "datasets/reference/images/mcmaster/3.tif",
+          "gain_db": 0.7952220009235411
         },
         {
-          "path": "datasets/reference/images/mcmaster/8.tif",
-          "gain_db": 0.31649079301949357
+          "path": "datasets/reference/images/mcmaster/17.tif",
+          "gain_db": 0.6794491568502519
         }
       ]
     },
@@ -1490,61 +1490,61 @@
       "images": 100,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.6249694402903516,
+      "mean_gain_db": 0.8557894353840664,
       "region_mean_gain_db": {
-        "full": 0.6249694402903516,
-        "interior8": 0.6353951316617362,
-        "border8": 0.6618384892044914
+        "full": 0.8557894353840664,
+        "interior8": 0.8670034892551933,
+        "border8": 0.8574922494679768
       },
-      "wins": 87,
+      "wins": 91,
       "ties": 0,
-      "losses": 13,
+      "losses": 9,
       "bootstrap95_mean_gain_db": [
-        0.4830634166418392,
-        0.7719675299183835
+        0.7110143060922376,
+        1.0055991542899776
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
-          "gain_db": -1.6899231582095204
-        },
-        {
-          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
-          "gain_db": -0.6752771703386315
+          "gain_db": -1.4951111173573324
         },
         {
           "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
-          "gain_db": -0.668959363885925
+          "gain_db": -0.5267132205725851
         },
         {
           "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
-          "gain_db": -0.6516053729380342
+          "gain_db": -0.45595409802283626
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.3685210251801898
         },
         {
           "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
-          "gain_db": -0.5323028385520701
+          "gain_db": -0.21641528168807156
         }
       ],
       "best5": [
         {
-          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
-          "gain_db": 3.2716553092431404
+          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
+          "gain_db": 3.4175017223400985
         },
         {
           "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
-          "gain_db": 2.7330581582121383
+          "gain_db": 3.2568643621490523
         },
         {
-          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
-          "gain_db": 2.4895471563053775
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.2074994461477644
         },
         {
-          "path": "datasets/reference/images/urban100/img_048_SRF_2_HR.png",
-          "gain_db": 2.29057185769957
+          "path": "datasets/reference/images/urban100/img_081_SRF_2_HR.png",
+          "gain_db": 2.8292786401280736
         },
         {
           "path": "datasets/reference/images/urban100/img_072_SRF_2_HR.png",
-          "gain_db": 2.238671512019941
+          "gain_db": 2.339143155600503
         }
       ]
     },
@@ -1554,61 +1554,61 @@
       "images": 442,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.9136131069425022,
+      "mean_gain_db": 1.0359087963474551,
       "region_mean_gain_db": {
-        "full": 0.9136131069425022,
-        "interior8": 0.9132956698239433,
-        "border8": 0.9033394980991193
+        "full": 1.0359087963474551,
+        "interior8": 1.0380270084457002,
+        "border8": 1.005741653352433
       },
-      "wins": 413,
+      "wins": 431,
       "ties": 0,
-      "losses": 29,
+      "losses": 11,
       "bootstrap95_mean_gain_db": [
-        0.8605437816054649,
-        0.9677762478246639
+        0.9905735095368539,
+        1.0819789094327688
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
-          "gain_db": -1.7298784538844458
-        },
-        {
-          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
-          "gain_db": -0.7080430038732501
+          "gain_db": -1.5305996436900742
         },
         {
           "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
-          "gain_db": -0.6902183694929658
+          "gain_db": -0.49501451174412736
         },
         {
           "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
-          "gain_db": -0.6144789331458682
+          "gain_db": -0.4672712536645953
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.39947107055115083
         },
         {
           "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
-          "gain_db": -0.5460681103711131
+          "gain_db": -0.2339978899219517
         }
       ],
       "best5": [
         {
-          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
-          "gain_db": 3.3563970889842576
-        },
-        {
           "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
-          "gain_db": 2.915057228058906
+          "gain_db": 3.5300903131602013
         },
         {
           "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
-          "gain_db": 2.5042502908757527
+          "gain_db": 3.3956448873888903
         },
         {
-          "path": "datasets/reference/images/bsds500/test/92014.jpg",
-          "gain_db": 2.432822216175186
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.3208944498208535
         },
         {
-          "path": "datasets/reference/images/urban100/img_048_SRF_2_HR.png",
-          "gain_db": 2.3863408568762647
+          "path": "datasets/reference/images/urban100/img_081_SRF_2_HR.png",
+          "gain_db": 2.824609023071547
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_059_SRF_2_HR.png",
+          "gain_db": 2.299179590708782
         }
       ]
     },
@@ -1618,61 +1618,61 @@
       "images": 200,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 1.2781328381087573,
+      "mean_gain_db": 1.3141728837118236,
       "region_mean_gain_db": {
-        "full": 1.2781328381087573,
-        "interior8": 1.2805605002589078,
-        "border8": 1.2008838617796034
+        "full": 1.3141728837118236,
+        "interior8": 1.319707306984933,
+        "border8": 1.2231158937852624
       },
-      "wins": 198,
+      "wins": 199,
       "ties": 0,
-      "losses": 2,
+      "losses": 1,
       "bootstrap95_mean_gain_db": [
-        1.2063400925528405,
-        1.3490886858909839
+        1.264688987364072,
+        1.362526981822173
       ],
       "worst5": [
         {
-          "path": "datasets/reference/images/bsds500/test/43051.jpg",
-          "gain_db": -0.19706733359273798
+          "path": "datasets/reference/images/bsds500/test/388006.jpg",
+          "gain_db": -0.0031820601302037232
         },
         {
-          "path": "datasets/reference/images/bsds500/test/388006.jpg",
-          "gain_db": -0.16039584916120475
+          "path": "datasets/reference/images/bsds500/test/43051.jpg",
+          "gain_db": 0.028123192139418052
         },
         {
           "path": "datasets/reference/images/bsds500/test/10081.jpg",
-          "gain_db": 0.05544939566345519
+          "gain_db": 0.27345268558422475
         },
         {
           "path": "datasets/reference/images/bsds500/test/81066.jpg",
-          "gain_db": 0.1559091036231095
+          "gain_db": 0.4648080191017918
         },
         {
-          "path": "datasets/reference/images/bsds500/test/226043.jpg",
-          "gain_db": 0.27489560121509626
+          "path": "datasets/reference/images/bsds500/test/196027.jpg",
+          "gain_db": 0.5106367007614452
         }
       ],
       "best5": [
         {
           "path": "datasets/reference/images/bsds500/test/92014.jpg",
-          "gain_db": 2.432822216175186
-        },
-        {
-          "path": "datasets/reference/images/bsds500/test/346016.jpg",
-          "gain_db": 2.3474430025057664
+          "gain_db": 2.0734057921603544
         },
         {
           "path": "datasets/reference/images/bsds500/test/101027.jpg",
-          "gain_db": 2.337082300211197
+          "gain_db": 1.9989616159749204
         },
         {
-          "path": "datasets/reference/images/bsds500/test/267036.jpg",
-          "gain_db": 2.311079628029187
+          "path": "datasets/reference/images/bsds500/test/77062.jpg",
+          "gain_db": 1.9854330076199709
         },
         {
-          "path": "datasets/reference/images/bsds500/test/87015.jpg",
-          "gain_db": 2.1814871437521184
+          "path": "datasets/reference/images/bsds500/test/130066.jpg",
+          "gain_db": 1.9290883770150558
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/2018.jpg",
+          "gain_db": 1.9140339520630043
         }
       ]
     },
@@ -1682,61 +1682,61 @@
       "images": 100,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.5799556903556239,
+      "mean_gain_db": 0.7566256514272679,
       "region_mean_gain_db": {
-        "full": 0.5799556903556239,
-        "interior8": 0.5799751983448642,
-        "border8": 0.5611861179924069
+        "full": 0.7566256514272679,
+        "interior8": 0.7571135353845123,
+        "border8": 0.7202587314173138
       },
-      "wins": 88,
+      "wins": 98,
       "ties": 0,
-      "losses": 12,
+      "losses": 2,
       "bootstrap95_mean_gain_db": [
-        0.4815358817435219,
-        0.6827139877808297
+        0.6789134900705436,
+        0.8360647227467408
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/div2k/validation/0885.png",
-          "gain_db": -0.4056272650749868
-        },
-        {
-          "path": "datasets/reference/images/div2k/validation/0892.png",
-          "gain_db": -0.3143039944159973
+          "gain_db": -0.21270554369987238
         },
         {
           "path": "datasets/reference/images/div2k/validation/0818.png",
-          "gain_db": -0.2492730107066663
+          "gain_db": -0.13592934899660136
         },
         {
-          "path": "datasets/reference/images/div2k/validation/0833.png",
-          "gain_db": -0.2274829866966428
+          "path": "datasets/reference/images/div2k/validation/0892.png",
+          "gain_db": 0.009872926119900427
         },
         {
           "path": "datasets/reference/images/div2k/validation/0806.png",
-          "gain_db": -0.20687658926532038
+          "gain_db": 0.05061519651829016
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0867.png",
+          "gain_db": 0.06178777088510401
         }
       ],
       "best5": [
         {
           "path": "datasets/reference/images/div2k/validation/0829.png",
-          "gain_db": 2.1810559813870576
+          "gain_db": 1.8444221157997482
         },
         {
           "path": "datasets/reference/images/div2k/validation/0857.png",
-          "gain_db": 2.0949118645895055
+          "gain_db": 1.7940121783931744
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0840.png",
+          "gain_db": 1.6520289764264326
         },
         {
           "path": "datasets/reference/images/div2k/validation/0855.png",
-          "gain_db": 1.749756102281843
+          "gain_db": 1.6343708039546598
         },
         {
           "path": "datasets/reference/images/div2k/validation/0862.png",
-          "gain_db": 1.699613399581125
-        },
-        {
-          "path": "datasets/reference/images/div2k/validation/0881.png",
-          "gain_db": 1.431611618158584
+          "gain_db": 1.514762496490846
         }
       ]
     },
@@ -1746,61 +1746,61 @@
       "images": 24,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.8503347201877932,
+      "mean_gain_db": 0.8860058500590893,
       "region_mean_gain_db": {
-        "full": 0.8503347201877932,
-        "interior8": 0.8477847203786588,
-        "border8": 0.9355642458657485
+        "full": 0.8860058500590893,
+        "interior8": 0.8844139931437156,
+        "border8": 0.9567091600401918
       },
       "wins": 24,
       "ties": 0,
       "losses": 0,
       "bootstrap95_mean_gain_db": [
-        0.700676253837712,
-        1.0166386453585663
+        0.7817487738454504,
+        0.9979160495250677
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/kodak24/kodim02.png",
-          "gain_db": 0.15820356774686317
+          "gain_db": 0.37688314496626063
         },
         {
           "path": "datasets/reference/images/kodak24/kodim12.png",
-          "gain_db": 0.4772776655588693
+          "gain_db": 0.48580155915069767
         },
         {
-          "path": "datasets/reference/images/kodak24/kodim23.png",
-          "gain_db": 0.48405201365432404
+          "path": "datasets/reference/images/kodak24/kodim10.png",
+          "gain_db": 0.6474973553602403
         },
         {
-          "path": "datasets/reference/images/kodak24/kodim07.png",
-          "gain_db": 0.48777803374139594
+          "path": "datasets/reference/images/kodak24/kodim16.png",
+          "gain_db": 0.6610979367614433
         },
         {
-          "path": "datasets/reference/images/kodak24/kodim03.png",
-          "gain_db": 0.570183704695733
+          "path": "datasets/reference/images/kodak24/kodim24.png",
+          "gain_db": 0.6800659648588017
         }
       ],
       "best5": [
         {
           "path": "datasets/reference/images/kodak24/kodim13.png",
-          "gain_db": 1.8983690137311378
+          "gain_db": 1.5287949471035454
         },
         {
           "path": "datasets/reference/images/kodak24/kodim01.png",
-          "gain_db": 1.7178232545703125
+          "gain_db": 1.4772505105701583
         },
         {
           "path": "datasets/reference/images/kodak24/kodim18.png",
-          "gain_db": 1.377797770082946
+          "gain_db": 1.2929425800494556
         },
         {
           "path": "datasets/reference/images/kodak24/kodim21.png",
-          "gain_db": 1.24528287804889
+          "gain_db": 1.2248678775256039
         },
         {
-          "path": "datasets/reference/images/kodak24/kodim08.png",
-          "gain_db": 1.1294953278262128
+          "path": "datasets/reference/images/kodak24/kodim05.png",
+          "gain_db": 1.0382266678348948
         }
       ]
     },
@@ -1810,61 +1810,61 @@
       "images": 18,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.23709290008592523,
+      "mean_gain_db": 0.5379091474870943,
       "region_mean_gain_db": {
-        "full": 0.23709290008592523,
-        "interior8": 0.23320629048599853,
-        "border8": 0.29391541038052843
+        "full": 0.5379091474870943,
+        "interior8": 0.5362599770384705,
+        "border8": 0.560260241527345
       },
-      "wins": 15,
+      "wins": 18,
       "ties": 0,
-      "losses": 3,
+      "losses": 0,
       "bootstrap95_mean_gain_db": [
-        0.11481776406468241,
-        0.3876588941402013
+        0.4032904382843937,
+        0.6919249635054436
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/mcmaster/6.tif",
-          "gain_db": -0.23238180832392175
-        },
-        {
-          "path": "datasets/reference/images/mcmaster/13.tif",
-          "gain_db": -0.130020166543364
+          "gain_db": 0.1771477962668193
         },
         {
           "path": "datasets/reference/images/mcmaster/2.tif",
-          "gain_db": -0.01825681173222904
+          "gain_db": 0.1782287151638542
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/13.tif",
+          "gain_db": 0.19747718117743318
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/18.tif",
+          "gain_db": 0.2277894080443481
         },
         {
           "path": "datasets/reference/images/mcmaster/1.tif",
-          "gain_db": 0.030220240199581028
-        },
-        {
-          "path": "datasets/reference/images/mcmaster/5.tif",
-          "gain_db": 0.10036339495967539
+          "gain_db": 0.29111878782733136
         }
       ],
       "best5": [
         {
+          "path": "datasets/reference/images/mcmaster/4.tif",
+          "gain_db": 1.351313365480575
+        },
+        {
           "path": "datasets/reference/images/mcmaster/7.tif",
-          "gain_db": 1.1896868919206476
+          "gain_db": 1.0713431907368474
         },
         {
           "path": "datasets/reference/images/mcmaster/9.tif",
-          "gain_db": 0.42499067376054356
+          "gain_db": 0.9220718207901477
         },
         {
           "path": "datasets/reference/images/mcmaster/3.tif",
-          "gain_db": 0.4179295027143297
+          "gain_db": 0.8042713886667201
         },
         {
-          "path": "datasets/reference/images/mcmaster/12.tif",
-          "gain_db": 0.3384726467851742
-        },
-        {
-          "path": "datasets/reference/images/mcmaster/11.tif",
-          "gain_db": 0.33185883472500066
+          "path": "datasets/reference/images/mcmaster/17.tif",
+          "gain_db": 0.680197504887472
         }
       ]
     },
@@ -1874,61 +1874,61 @@
       "images": 100,
       "baseline": "menon2007",
       "method": "softmenon",
-      "mean_gain_db": 0.6551915112521843,
+      "mean_gain_db": 0.884280410442978,
       "region_mean_gain_db": {
-        "full": 0.6551915112521843,
-        "interior8": 0.6502251965807919,
-        "border8": 0.7523665471702188
+        "full": 0.884280410442978,
+        "interior8": 0.8827650737541994,
+        "border8": 0.9484305469453475
       },
-      "wins": 88,
+      "wins": 92,
       "ties": 0,
-      "losses": 12,
+      "losses": 8,
       "bootstrap95_mean_gain_db": [
-        0.5112055098531042,
-        0.8023888583256519
+        0.7370660651312965,
+        1.036725085774959
       ],
       "worst5": [
         {
           "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
-          "gain_db": -1.7298784538844458
-        },
-        {
-          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
-          "gain_db": -0.7080430038732501
+          "gain_db": -1.5305996436900742
         },
         {
           "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
-          "gain_db": -0.6902183694929658
+          "gain_db": -0.49501451174412736
         },
         {
           "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
-          "gain_db": -0.6144789331458682
+          "gain_db": -0.4672712536645953
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.39947107055115083
         },
         {
           "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
-          "gain_db": -0.5460681103711131
+          "gain_db": -0.2339978899219517
         }
       ],
       "best5": [
         {
-          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
-          "gain_db": 3.3563970889842576
-        },
-        {
           "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
-          "gain_db": 2.915057228058906
+          "gain_db": 3.5300903131602013
         },
         {
           "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
-          "gain_db": 2.5042502908757527
+          "gain_db": 3.3956448873888903
         },
         {
-          "path": "datasets/reference/images/urban100/img_048_SRF_2_HR.png",
-          "gain_db": 2.3863408568762647
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.3208944498208535
         },
         {
-          "path": "datasets/reference/images/urban100/img_072_SRF_2_HR.png",
-          "gain_db": 2.198952398676578
+          "path": "datasets/reference/images/urban100/img_081_SRF_2_HR.png",
+          "gain_db": 2.824609023071547
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_059_SRF_2_HR.png",
+          "gain_db": 2.299179590708782
         }
       ]
     }
@@ -1943,74 +1943,74 @@
     {
       "backend": "cpu",
       "method": "bilinear",
-      "mean_phase_median_ms": 0.28283445,
-      "fps": 3535.6371898826324
+      "mean_phase_median_ms": 0.28290175,
+      "fps": 3534.796090869003
     },
     {
       "backend": "cpu",
       "method": "malvar",
-      "mean_phase_median_ms": 0.6424553,
-      "fps": 1556.5285242412974
+      "mean_phase_median_ms": 0.64251075,
+      "fps": 1556.394192626349
     },
     {
       "backend": "cpu",
       "method": "menon2007",
-      "mean_phase_median_ms": 1.1925968999999998,
-      "fps": 838.5062882521329
+      "mean_phase_median_ms": 1.1966413999999999,
+      "fps": 835.6722406562234
     },
     {
       "backend": "cpu",
       "method": "softmenon",
-      "mean_phase_median_ms": 0.4772391,
-      "fps": 2095.3857301298235
+      "mean_phase_median_ms": 0.49330925000000003,
+      "fps": 2027.1259863868354
     },
     {
       "backend": "cuda",
       "method": "bilinear",
-      "mean_phase_median_ms": 0.347109,
-      "fps": 2880.9394167250057
+      "mean_phase_median_ms": 0.35005865,
+      "fps": 2856.6641618483072
     },
     {
       "backend": "cuda",
       "method": "malvar",
-      "mean_phase_median_ms": 0.3471757,
-      "fps": 2880.3859256278597
+      "mean_phase_median_ms": 0.35006165,
+      "fps": 2856.639680467712
     },
     {
       "backend": "cuda",
       "method": "menon2007",
-      "mean_phase_median_ms": 0.5368821500000001,
-      "fps": 1862.6061604022407
+      "mean_phase_median_ms": 0.5393409,
+      "fps": 1854.1149020962437
     },
     {
       "backend": "cuda",
       "method": "softmenon",
-      "mean_phase_median_ms": 0.37137204999999995,
-      "fps": 2692.7174514075577
+      "mean_phase_median_ms": 0.37395100000000003,
+      "fps": 2674.147147620945
     },
     {
       "backend": "opencv",
       "method": "opencv_bilinear",
-      "mean_phase_median_ms": 0.30303884999999997,
-      "fps": 3299.906926125149
+      "mean_phase_median_ms": 0.30880219999999997,
+      "fps": 3238.318897987126
     },
     {
       "backend": "opencv",
       "method": "opencv_ea",
-      "mean_phase_median_ms": 0.31891464999999997,
-      "fps": 3135.63519267616
+      "mean_phase_median_ms": 0.3217046,
+      "fps": 3108.4417195153565
     },
     {
       "backend": "opencv",
       "method": "opencv_vng",
-      "mean_phase_median_ms": 6.7322035499999995,
-      "fps": 148.5397749151539
+      "mean_phase_median_ms": 6.7623464,
+      "fps": 147.8776656575889
     },
     {
       "backend": "npp",
       "method": "npp_cfa",
-      "mean_phase_median_ms": 0.40251175,
-      "fps": 2484.399523740611
+      "mean_phase_median_ms": 0.40728659999999994,
+      "fps": 2455.2735101032054
     }
   ],
   "cpu_cuda_mismatches": {
@@ -2020,15 +2020,15 @@
     "softmenon": 0
   },
   "artifact_sha256": {
-    "quality-cpu.json.gz": "b00527ab9a114ed68f314aabd796640c2f3ef4a7cb3f2843fa874c5756330f58",
-    "timing-cpu.json": "c8d5ea4670e6ce3c310bac902db653ceec9acfa0fdb2bb7d90883dc67b267fc6",
-    "quality-cuda.json.gz": "69286c16027b533e2322801782bfb8c005db3473de5ce2bd4715191fbb5e2388",
-    "timing-cuda.json": "10b99218fb41f20a6e7a82aed83ee6eda26752b76244c737103ebfbf4021c52a",
+    "quality-cpu.json.gz": "69cf65ad187bc3254a0cf41679d4339e1084d9fe65c13e2e10694ba3089c3e83",
+    "timing-cpu.json": "f38a8fb82caa225613096fe89fc65d29c46f7e8d8bf96b14b2e31edc142e5eb0",
+    "quality-cuda.json.gz": "60644d633c3a765891d6bdc2357331b32147b5b5f1c98675a97dbd7b7b8e2ddb",
+    "timing-cuda.json": "be99f51627237dece87e358602d819e4edcd6491a2d7d59c8d7c8a98837629cd",
     "quality-opencv.json.gz": "3713b5373dfed2cb0c889df527b43430d1cfed742c06ee2cef8e07e30e338c74",
-    "timing-opencv.json": "ae60fc83c78cffaf46572c857c9f0ec97474abdb9b7b56525bcbecde539acb23",
+    "timing-opencv.json": "236a497cea41d4364c7c993cf8b61c47c1f86908eb9867202310c7c8bfdfe0e2",
     "quality-npp.json.gz": "993d2a4cdb113945ffebe2ec9bfa7ffe22eaed4bcf51e3f55c91b1748f72bc90",
-    "timing-npp.json": "82cdda0c90f458406706fd4d95717664e706e7aefacdfdff12f94bad91ba8252",
-    "examples.json": "4edbeaa1ad623cf6e7fbe4b3478c90fcf55c5ea58a782c9d7bdf5430e55ddd95"
+    "timing-npp.json": "e8417545ec9954048d5408ffbc4dd68dd0b07a62d403d169015f87ccb73ccd2b",
+    "examples.json": "7dd2eb27e3ee2bf3d053eeba678896be8cd6706fb1efc9bca00d8338082d874f"
   },
   "generator_sha256": "55f4fdc45a1cf596fb5a8efac40f3ae078e1ee9f2cfe22c3e1b0feb3f354f114"
 }

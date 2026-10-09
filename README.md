@@ -13,7 +13,7 @@ and API names are retained.
 - **SoftMenon** — neighborhood directional scores and squared soft green weights,
   followed by a 3×3 chroma-median refinement that preserves every measured sample.
 
-SoftMenon scores **37.823 dB**, **0.895 dB above full paper Menon**, on our
+SoftMenon scores **37.946 dB**, **1.017 dB above full paper Menon**, on our
 442-image benchmark. These are average results; individual scenes can favor
 another method. [benchmarks.md](benchmarks.md) reports the evaluation protocol,
 quality comparisons, raw results, and reproduction instructions.
@@ -42,14 +42,15 @@ and down. `CL2, CR2, CU2, CD2` are samples of the center's color two pixels
 away in those directions.
 
 ```text
-Gh = round((GL + GR)/2) + round((2*C0 - CL2 - CR2)/4)
-Gv = round((GU + GD)/2) + round((2*C0 - CU2 - CD2)/4)
+Gh = round((GL + GR)/2) + round(3*(2*C0 - CL2 - CR2)/16)
+Gv = round((GU + GD)/2) + round(3*(2*C0 - CU2 - CD2)/16)
 ```
 
 Each `round` means nearest integer, with half ties toward positive infinity.
 The two terms in each estimate are rounded separately; `Gh` and `Gv` are not
-clipped yet. Evaluate these estimates at neighboring measured red/blue sites,
-and form the color differences **at those same sites**:
+clipped yet. The correction uses three-quarters of the Hamilton–Adams strength.
+Use these same estimates, including that correction strength, at neighboring
+measured red/blue sites, and form the color differences **at those same sites**:
 
 ```text
 Dh(q) = C(q) - Gh(q)
@@ -107,7 +108,7 @@ A lower horizontal score therefore favors `Gh`; a lower vertical score favors
 `clip` limits the result to `[0,255]`. Measured green passes through unchanged.
 RAW neighbors beyond the image use phase-preserving reflect-101 reflection.
 
-These directional estimates follow [Hamilton–Adams](https://patents.google.com/patent/US5629734A/en),
+These directional estimates adapt [Hamilton–Adams](https://patents.google.com/patent/US5629734A/en),
 and the neighborhood consistency stencil follows [Menon, Andriani and Calvagno (2007)](https://doi.org/10.1109/TIP.2006.884928).
 SoftMenon uses the squared soft weighting above, followed by the two stages below.
 
@@ -122,7 +123,7 @@ flowchart TD
     N["Measured target-color neighbors"] --> D["Subtract each neighbor's green<br/>D = C - G"]
     D --> SITE{"Center's measured color"}
     SITE -->|Green| AX["Average two axial differences<br/>Horizontal or vertical Bayer pair"]
-    SITE -->|Other color| DI["Form two diagonal pair estimates<br/>Choose or average by consistency"]
+    SITE -->|Other color| DI["Form two diagonal pair estimates<br/>Blend by score gap: 1:1, 3:1, or winner"]
     AX --> C["Missing C = clip(G0 + estimated D)"]
     DI --> C
     C --> I["Complete initial image I<br/>Keep the measured center channel"]
@@ -157,14 +158,21 @@ D_SW = B_SW - G_SW        D_SE = B_SE - G_SE
 E1 = round((D_NW + D_SE)/2)    S1 = abs(D_NW - D_SE)
 E2 = round((D_NE + D_SW)/2)    S2 = abs(D_NE - D_SW)
 
-If abs(S1 - S2) <= 26: D_est = round((E1 + E2)/2)
-Otherwise:             D_est = E1 if S1 <= S2, else E2
+gap = abs(S1 - S2)
+winner = E1 if S1 <= S2, else E2
+loser  = E2 if S1 <= S2, else E1
+
+If gap <= 16:       D_est = round((E1 + E2)/2)
+Else if gap <= 64:  D_est = round((3*winner + loser)/4)
+Otherwise:         D_est = winner
 
 B = clip(G0 + D_est)
 ```
 
-The 26-DN threshold belongs to this diagonal decision. Both pair estimates
-are rounded before the close-score average; measured red `R0` stays exact.
+The score gap controls how strongly to favor the more consistent diagonal:
+equal weights for a gap up to 16 DN, three-to-one weights up to 64 DN, then
+the winner alone. Both pair estimates are rounded before blending;
+measured red `R0` stays exact.
 All missing red/blue values are clipped to `[0,255]`, producing the complete
 initial image `I` used by the next stage.
 
@@ -212,14 +220,14 @@ results, not Jetson measurements.
 
 | Method | PSNR dB | CPU ms | CPU FPS | CUDA ms | CUDA FPS |
 |---|---:|---:|---:|---:|---:|
-| Bilinear | 28.914 | 0.283 | 3,536 | 0.347 | 2,881 |
-| Malvar 2004 | 33.963 | 0.642 | 1,557 | 0.347 | 2,880 |
-| Menon 2007, full paper | 36.928 | 1.193 | 839 | 0.537 | 1,863 |
-| SoftMenon | **37.823** | 0.477 | 2,095 | 0.371 | 2,693 |
-| OpenCV bilinear | 28.914 | 0.303 | 3,300 | — | — |
-| OpenCV edge-aware | 28.927 | 0.319 | 3,136 | — | — |
-| OpenCV VNG, registration corrected | 33.509 | 6.732 | 149 | — | — |
-| NPP CFA reconstruction | 29.103 | — | — | 0.403 | 2,484 |
+| Bilinear | 28.914 | 0.283 | 3,535 | 0.350 | 2,857 |
+| Malvar 2004 | 33.963 | 0.643 | 1,556 | 0.350 | 2,857 |
+| Menon 2007, full paper | 36.928 | 1.197 | 836 | 0.539 | 1,854 |
+| SoftMenon | **37.946** | 0.493 | 2,027 | 0.374 | 2,674 |
+| OpenCV bilinear | 28.914 | 0.309 | 3,238 | — | — |
+| OpenCV edge-aware | 28.927 | 0.322 | 3,108 | — | — |
+| OpenCV VNG, registration corrected | 33.509 | 6.762 | 148 | — | — |
+| NPP CFA reconstruction | 29.103 | — | — | 0.407 | 2,455 |
 
 SoftMenon's SIMD green kernels compute estimates only where green is missing.
 The CPU caches directional color differences and processes strips through all
@@ -242,11 +250,11 @@ Kodak `kodim11`, BGGR; individual full-image PSNR:
 | Bilinear: 28.761 dB | Malvar: 34.366 dB |
 |---|---|
 | ![Bilinear](bilinear.out.png) | ![Malvar](malvar2004.out.png) |
-| **Paper Menon: 39.102 dB** | **SoftMenon: 40.053 dB** |
+| **Paper Menon: 39.102 dB** | **SoftMenon: 40.006 dB** |
 | ![Menon](menon2007.out.png) | ![SoftMenon](softmenon.out.png) |
 
 Kodak `kodim19`, BGGR: [paper Menon, 39.918 dB](menon2007.lighthouse.png)
-and [SoftMenon, 40.932 dB](softmenon.lighthouse.png).
+and [SoftMenon, 40.800 dB](softmenon.lighthouse.png).
 Images courtesy of Kodak / [Rich Franzen's collection](https://r0k.us/graphics/kodak/).
 
 ## Build and use

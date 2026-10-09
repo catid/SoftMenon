@@ -35,10 +35,13 @@ This CPU implementation accepts 8-bit RGGB and BGGR images with width and height
 at least two, including odd dimensions. Choose `SARONIC_DEBAYER_BILINEAR`,
 `SARONIC_DEBAYER_MALVAR2004`, `SARONIC_DEBAYER_MENON2007`, or
 `SARONIC_DEBAYER_SOFTMENON`. Menon implements DDFAPD with full paper refinement;
-SoftMenon blends horizontal and vertical Hamilton–Adams green candidates with
-squared inverse scores from directional color-difference variation. It then
-reconstructs red/blue and applies immutable 3×3 medians of color differences,
-refining missing values while preserving every measured CFA sample.
+SoftMenon uses horizontal and vertical Hamilton–Adams green candidates with a
+three-quarter curvature correction, rounded separately from the pair mean,
+and blends them with squared inverse scores from directional color-difference
+variation. Red/blue diagonal interpolation uses equal weights for gradient gaps
+up to 16, a 3:1 preference for the smoother diagonal up to 64, and that diagonal
+alone for larger gaps. Immutable 3×3 medians of color differences then refine
+missing values while preserving every measured CFA sample.
 Output channels are BGR. Row
 pitches are byte counts; zero means tightly packed, otherwise each pitch must
 cover its complete image row.

@@ -644,9 +644,13 @@ __global__ void rggb_softmenon_rb(
         int16_t Grad_v = abs((CD_UR - CD_LL));
 
         // Decision based on gradients
-        int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-        if (abs(Grad_h - Grad_v) <= 26) {
+        const int16_t CD_best = (Grad_h <= Grad_v) ? CD_h : CD_v;
+        const int CD_gap = abs(Grad_h - Grad_v);
+        int16_t CD_est = CD_best;
+        if (CD_gap <= 16) {
             CD_est = (CD_h + CD_v + 1) >> 1;
+        } else if (CD_gap <= 64) {
+            CD_est = (2 * CD_best + CD_h + CD_v + 2) >> 2;
         }
 
 
@@ -690,9 +694,13 @@ __global__ void rggb_softmenon_rb(
         int16_t Grad_v = abs((CD_UR - CD_LL));
 
         // Decision based on gradients
-        int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-        if (abs(Grad_h - Grad_v) <= 26) {
+        const int16_t CD_best = (Grad_h <= Grad_v) ? CD_h : CD_v;
+        const int CD_gap = abs(Grad_h - Grad_v);
+        int16_t CD_est = CD_best;
+        if (CD_gap <= 16) {
             CD_est = (CD_h + CD_v + 1) >> 1;
+        } else if (CD_gap <= 64) {
+            CD_est = (2 * CD_best + CD_h + CD_v + 2) >> 2;
         }
 
 
@@ -901,9 +909,13 @@ __global__ void bggr_softmenon_rb(
         int16_t Grad_v = abs(CD_UR - CD_LL);
 
         // Decision based on gradients
-        int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-        if (abs(Grad_h - Grad_v) <= 26) {
+        const int16_t CD_best = (Grad_h <= Grad_v) ? CD_h : CD_v;
+        const int CD_gap = abs(Grad_h - Grad_v);
+        int16_t CD_est = CD_best;
+        if (CD_gap <= 16) {
             CD_est = (CD_h + CD_v + 1) >> 1;
+        } else if (CD_gap <= 64) {
+            CD_est = (2 * CD_best + CD_h + CD_v + 2) >> 2;
         }
 
 
@@ -948,9 +960,13 @@ __global__ void bggr_softmenon_rb(
         int16_t Grad_v = abs(CD_UR - CD_LL);
 
         // Decision based on gradients
-        int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-        if (abs(Grad_h - Grad_v) <= 26) {
+        const int16_t CD_best = (Grad_h <= Grad_v) ? CD_h : CD_v;
+        const int CD_gap = abs(Grad_h - Grad_v);
+        int16_t CD_est = CD_best;
+        if (CD_gap <= 16) {
             CD_est = (CD_h + CD_v + 1) >> 1;
+        } else if (CD_gap <= 64) {
+            CD_est = (2 * CD_best + CD_h + CD_v + 2) >> 2;
         }
 
 

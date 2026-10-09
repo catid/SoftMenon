@@ -123,7 +123,10 @@ inline void soft_rb_pixel(const uint8_t* source,ptrdiff_t pitch,uint8_t* output,
             const int horizontal=(ul+dr+1)>>1,vertical=(ur+dl+1)>>1;
             const int gh=std::abs(ul-dr),gv=std::abs(ur-dl);
             difference=gh<=gv ? horizontal : vertical;
-            if (std::abs(gh-gv)<=26) difference=(horizontal+vertical+1)>>1;
+            // Near-equal diagonals share equally; moderate gaps favor the
+            // lower-variation direction 3:1, and large gaps use it alone.
+            if (std::abs(gh-gv)<=16) difference=(horizontal+vertical+1)>>1;
+            else if (std::abs(gh-gv)<=64) difference=(2*difference+horizontal+vertical+2)>>2;
         } else {
             const bool horizontal=((y&1)==0)==(channel==0);
             const ptrdiff_t axis=horizontal ? 3 : pitch;
@@ -156,9 +159,11 @@ SOFT_INLINE void soft_rb8(const uint8_t* source,ptrdiff_t pitch,uint8_t* output,
     const __m256i gradient_h=_mm256_abs_epi16(_mm256_sub_epi16(values[0],values[8]));
     const __m256i gradient_v=_mm256_abs_epi16(_mm256_sub_epi16(values[2],values[6]));
     __m256i diagonal=_mm256_blendv_epi8(diagonal_h,diagonal_v,_mm256_cmpgt_epi16(gradient_h,gradient_v));
-    const __m256i close=_mm256_cmpgt_epi16(_mm256_set1_epi16(27),
-                                          _mm256_abs_epi16(_mm256_sub_epi16(gradient_h,gradient_v)));
-    diagonal=_mm256_blendv_epi8(diagonal,_mm256_srai_epi16(_mm256_add_epi16(_mm256_add_epi16(diagonal_h,diagonal_v),one),1),close);
+    const __m256i gap=_mm256_abs_epi16(_mm256_sub_epi16(gradient_h,gradient_v));
+    const __m256i weak=_mm256_srai_epi16(_mm256_add_epi16(_mm256_add_epi16(_mm256_slli_epi16(diagonal,1),_mm256_add_epi16(diagonal_h,diagonal_v)),_mm256_set1_epi16(2)),2);
+    const __m256i mean=_mm256_srai_epi16(_mm256_add_epi16(_mm256_add_epi16(diagonal_h,diagonal_v),one),1);
+    diagonal=_mm256_blendv_epi8(diagonal,weak,_mm256_cmpgt_epi16(_mm256_set1_epi16(65),gap));
+    diagonal=_mm256_blendv_epi8(diagonal,mean,_mm256_cmpgt_epi16(_mm256_set1_epi16(17),gap));
     const __m256i horizontal=_mm256_srai_epi16(_mm256_add_epi16(_mm256_add_epi16(values[3],values[5]),one),1);
     const __m256i vertical=_mm256_srai_epi16(_mm256_add_epi16(_mm256_add_epi16(values[1],values[7]),one),1);
     const __m256i axial=_mm256_blend_epi16(horizontal,vertical,OddRow ? 0x55 : 0xaa);
@@ -212,10 +217,11 @@ SOFT512_INLINE void soft_rb16(const uint8_t* source,ptrdiff_t pitch,uint8_t* out
     const __m512i gradient_h=_mm512_abs_epi16(_mm512_sub_epi16(values[0],values[8]));
     const __m512i gradient_v=_mm512_abs_epi16(_mm512_sub_epi16(values[2],values[6]));
     __m512i diagonal=_mm512_mask_mov_epi16(diagonal_h,_mm512_cmpgt_epi16_mask(gradient_h,gradient_v),diagonal_v);
-    const __mmask32 close=_mm512_cmpgt_epi16_mask(_mm512_set1_epi16(27),
-        _mm512_abs_epi16(_mm512_sub_epi16(gradient_h,gradient_v)));
-    diagonal=_mm512_mask_mov_epi16(diagonal,close,
-        _mm512_srai_epi16(_mm512_add_epi16(_mm512_add_epi16(diagonal_h,diagonal_v),one),1));
+    const __m512i gap=_mm512_abs_epi16(_mm512_sub_epi16(gradient_h,gradient_v));
+    const __m512i weak=_mm512_srai_epi16(_mm512_add_epi16(_mm512_add_epi16(_mm512_slli_epi16(diagonal,1),_mm512_add_epi16(diagonal_h,diagonal_v)),_mm512_set1_epi16(2)),2);
+    const __m512i mean=_mm512_srai_epi16(_mm512_add_epi16(_mm512_add_epi16(diagonal_h,diagonal_v),one),1);
+    diagonal=_mm512_mask_mov_epi16(diagonal,_mm512_cmpgt_epi16_mask(_mm512_set1_epi16(65),gap),weak);
+    diagonal=_mm512_mask_mov_epi16(diagonal,_mm512_cmpgt_epi16_mask(_mm512_set1_epi16(17),gap),mean);
     const __m512i horizontal=_mm512_srai_epi16(_mm512_add_epi16(_mm512_add_epi16(values[3],values[5]),one),1);
     const __m512i vertical=_mm512_srai_epi16(_mm512_add_epi16(_mm512_add_epi16(values[1],values[7]),one),1);
     const __m512i axial=_mm512_mask_mov_epi16(horizontal,OddRow ? 0x55555555u : 0xaaaaaaaau,vertical);

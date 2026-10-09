@@ -1,6 +1,7 @@
 #pragma once
-// SoftMenon green interpolation. Separately rounded horizontal/vertical HA
-// candidates are scored by posterior directional color-difference variation.
+// SoftMenon green interpolation. Horizontal/vertical HA candidates use a
+// three-quarter curvature correction, rounded separately from the pair mean,
+// and are scored by posterior directional color-difference variation.
 // Squared inverse scores are blended exactly, with half ties rounded upward.
 // The RAW rectangle starts at a BGGR blue site, has even dimensions, and needs
 // a four-pixel halo. The caller adds its two-pixel completion halo separately.
@@ -71,7 +72,7 @@ SOFT_INLINE __m256i soft_load_chromatic16(const uint8_t* p) {
 // Radius four plus the production green halo of two needs padding >=6.
 namespace {
 inline int softmenon_candidate(const uint8_t* p,ptrdiff_t a) {
-    return ((int(p[-a])+p[a]+1)>>1)+((2*int(p[0])-p[-2*a]-p[2*a]+2)>>2);
+    return ((int(p[-a])+p[a]+1)>>1)+((6*(2*int(p[0])-p[-2*a]-p[2*a])+16)>>5);
 }
 inline int softmenon_difference(const uint8_t* p,ptrdiff_t a) {
     return int(p[0])-softmenon_candidate(p,a);
@@ -109,7 +110,7 @@ SM512 __m512i softmenon_candidate512(const uint8_t* p,ptrdiff_t a) {
     const __m512i c=green_load_chromatic<Parity>(p),l=green_load_chromatic<Parity>(p-a),r=green_load_chromatic<Parity>(p+a);
     const __m512i l2=green_load_chromatic<Parity>(p-2*a),r2=green_load_chromatic<Parity>(p+2*a);
     return _mm512_add_epi32(_mm512_srli_epi32(_mm512_add_epi32(_mm512_add_epi32(l,r),_mm512_set1_epi32(1)),1),
-        _mm512_srai_epi32(_mm512_add_epi32(_mm512_sub_epi32(_mm512_slli_epi32(c,1),_mm512_add_epi32(l2,r2)),_mm512_set1_epi32(2)),2));
+        _mm512_srai_epi32(_mm512_add_epi32(_mm512_mullo_epi32(_mm512_sub_epi32(_mm512_slli_epi32(c,1),_mm512_add_epi32(l2,r2)),_mm512_set1_epi32(6)),_mm512_set1_epi32(16)),5));
 }
 template<int Parity>
 SM512 __m512i softmenon_difference512(const uint8_t* p,ptrdiff_t a) {
@@ -136,7 +137,7 @@ SOFT_INLINE __m256i softmenon_candidate256(const uint8_t* p,ptrdiff_t a) {
     const __m256i c=soft_load_chromatic16<Parity>(p),l=soft_load_chromatic16<Parity>(p-a),r=soft_load_chromatic16<Parity>(p+a);
     const __m256i l2=soft_load_chromatic16<Parity>(p-2*a),r2=soft_load_chromatic16<Parity>(p+2*a);
     return _mm256_add_epi16(_mm256_srli_epi16(_mm256_add_epi16(_mm256_add_epi16(l,r),_mm256_set1_epi16(1)),1),
-        _mm256_srai_epi16(_mm256_add_epi16(_mm256_sub_epi16(_mm256_slli_epi16(c,1),_mm256_add_epi16(l2,r2)),_mm256_set1_epi16(2)),2));
+        _mm256_srai_epi16(_mm256_add_epi16(_mm256_mullo_epi16(_mm256_sub_epi16(_mm256_slli_epi16(c,1),_mm256_add_epi16(l2,r2)),_mm256_set1_epi16(6)),_mm256_set1_epi16(16)),5));
 }
 template<int Parity>
 SOFT_INLINE __m256i softmenon_difference256(const uint8_t* p,ptrdiff_t a) {
@@ -281,7 +282,7 @@ SMW512 __m512i softmenon_candidate_wide(const uint8_t* p,ptrdiff_t a) {
     const __m512i c=softmenon_load_wide<Parity>(p),l=softmenon_load_wide<Parity>(p-a),r=softmenon_load_wide<Parity>(p+a);
     const __m512i l2=softmenon_load_wide<Parity>(p-2*a),r2=softmenon_load_wide<Parity>(p+2*a);
     return _mm512_add_epi16(_mm512_srli_epi16(_mm512_add_epi16(_mm512_add_epi16(l,r),_mm512_set1_epi16(1)),1),
-        _mm512_srai_epi16(_mm512_add_epi16(_mm512_sub_epi16(_mm512_slli_epi16(c,1),_mm512_add_epi16(l2,r2)),_mm512_set1_epi16(2)),2));
+        _mm512_srai_epi16(_mm512_add_epi16(_mm512_mullo_epi16(_mm512_sub_epi16(_mm512_slli_epi16(c,1),_mm512_add_epi16(l2,r2)),_mm512_set1_epi16(6)),_mm512_set1_epi16(16)),5));
 }
 template<int Parity>
 SMW512 __m512i softmenon_difference_wide(const uint8_t* p,ptrdiff_t a) {

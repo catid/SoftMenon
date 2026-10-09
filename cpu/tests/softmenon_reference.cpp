@@ -55,7 +55,7 @@ void completed_reference(const Buffer& raw,Buffer& rgb,bool rggb) {
     };
     const auto candidate=[&](int x,int y,int dx,int dy) {
         return rounded(sample(x-dx,y-dy)+sample(x+dx,y+dy),2)
-            +rounded(2*sample(x,y)-sample(x-2*dx,y-2*dy)-sample(x+2*dx,y+2*dy),4);
+            +rounded(6*(2*sample(x,y)-sample(x-2*dx,y-2*dy)-sample(x+2*dx,y+2*dy)),32);
     };
     const auto difference=[&](int x,int y,int dx,int dy) {
         return sample(x,y)-candidate(x,y,dx,dy);
@@ -100,8 +100,9 @@ void completed_reference(const Buffer& raw,Buffer& rgb,bool rggb) {
                 const int dl=color_difference(x-1,y+1),dr=color_difference(x+1,y+1);
                 const int first_variation=std::abs(ul-dr),second_variation=std::abs(ur-dl);
                 const int64_t first=rounded(ul+dr,2),second=rounded(ur+dl,2);
-                d=std::abs(first_variation-second_variation)<=26 ? rounded(first+second,2)
-                    : first_variation<=second_variation ? first : second;
+                const int64_t best=first_variation<=second_variation ? first : second;
+                const int gap=std::abs(first_variation-second_variation);
+                d=gap<=16 ? rounded(first+second,2) : gap<=64 ? rounded(2*best+first+second,4) : best;
             }
             rgb.at(x,y,channel)=static_cast<uint8_t>(clipped(static_cast<int>(green(x,y)+d)));
         }

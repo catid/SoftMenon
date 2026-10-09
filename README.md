@@ -97,8 +97,6 @@ exact refinement equations in [benchmarks.md](benchmarks.md#current-softmenon-re
 The implementation is in [the initial CPU stages](cpu/cpu_kernel.cpp),
 [CPU median refinement](cpu/chroma_median.hpp), and
 [CUDA median refinement](c/src/chroma_median.cuh).
-See [next ablation ideas](research/softmenon-next-ablations.md) for the research
-review and proposed experiments beyond this version.
 
 ## Measured comparison
 

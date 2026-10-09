@@ -11,7 +11,7 @@ Python standard library; scoring additionally requires NumPy and Pillow.
 
 ```bash
 python3 -m venv build/benchmark-venv
-build/benchmark-venv/bin/pip install numpy==2.5.3 Pillow==12.3.0
+build/benchmark-venv/bin/pip install numpy==1.26.4 Pillow==10.2.0
 build/benchmark-venv/bin/python benchmark/datasets.py
 build/benchmark-venv/bin/python benchmark/datasets.py --verify \
   --decoded-report build/dataset-decoding.json
@@ -63,17 +63,16 @@ sha256(f"{width}x{height}:RGB:".encode() + rgb_uint8_row_major_bytes)
 
 `datasets.py --decoded-report` records Pillow/JPEG versions and fails if pixels
 differ. `run.py` also enforces these hashes before scoring. Our production scoring
-used NumPy 2.5.3, Pillow 12.3.0, and libjpeg API version 6.2. Independent dataset
-verification also matched with Pillow 10.2.0/libjpeg 8.0/libjpeg-turbo 2.1.5.
+used NumPy 1.26.4, Pillow 10.2.0, and libjpeg API version 8.0. Decoded hashes
+also match Pillow 12.3.0 with libjpeg API version 6.2.
 Versions are provenance; matching decoded bytes is the actual acceptance check.
 If a URL changes, obtain the exact bytes from a mirror and verify against the
 manifest instead of silently substituting another split or crop.
 
 Dataset images retain their owners' terms and attribution. The manifest links
 source pages and records use notes. Downloading data does not put it under this
-repository's code license. The larger local RAW/video collection is **not needed**
-for the PSNR results here: no native linear RAW or temporal quality claim follows
-from this rendered-image benchmark.
+repository's code license. The evaluation uses rendered images; native linear
+RAW and temporal quality require separate measurements.
 
 ## Input and metric contract
 
@@ -97,10 +96,6 @@ from this rendered-image benchmark.
    PSNR instead sums SSE and sample counts before taking the logarithm. They
    answer different questions and can rank methods differently.
 
-The historical scorer summed only blue-channel error but divided by three-channel
-sample count. Those old PSNR numbers are invalid and withdrawn. All numbers in
-this document use the corrected all-channel scorer.
-
 **Original** uses the complete input image, including its existing boundary.
 **Inset16** first crops 16 pixels from each input edge, then remosaics and
 reconstructs that smaller image independently. This even crop preserves CFA
@@ -122,10 +117,13 @@ PSNR deltas are labeled as such, while MSE and win/loss counts retain every case
 - **Menon 2007:** full DDFAPD, including its three refinement stages, following
   [Menon, Andriani and Calvagno, TIP 2007](https://doi.org/10.1109/TIP.2006.884928)
   and the [pinned Colour implementation](https://github.com/colour-science/colour-demosaicing/blob/f4f67d46c8a803164e9bc4b36d828931e6377e7c/colour_demosaicing/bayer/demosaicing/menon2007.py).
-- **SoftMenon:** soft directional green interpolation followed by a 3×3 chroma
-  median refinement. The median color differences reconstruct missing green
-  from the measured red/blue sample, then reconstruct the other missing color.
-  Every measured CFA sample is preserved.
+- **SoftMenon:** Hamilton–Adams directional green estimates, neighborhood
+  consistency scores from colocated color differences, and squared soft weights.
+  Initial red/blue reconstruction interpolates differences from green. A 3×3
+  chroma-median refinement then reconstructs missing green from the measured
+  red/blue sample and reconstructs the other missing color. Every measured CFA
+  sample is preserved. [The complete equations and diagrams](README.md#how-softmenon-works)
+  define the three stages.
 
 The full paper reference is defined in
 [common/menon2007.hpp](common/menon2007.hpp), which the CUDA backend executes
@@ -144,8 +142,7 @@ The baseline matched an independent rational NumPy oracle on 182 fixtures and
 difference 1.14e-13 DN). Forty-four final uint8 discrepancies with upstream float
 rounding occurred only at mathematically exact half ties. CPU/CUDA exact pairing
 was checked for Bilinear, Malvar, and paper Menon. SoftMenon matched across
-CPU/CUDA on all 1,768 image/phase/cohort observations; this was measured rather
-than assumed from its name.
+CPU/CUDA on all 1,768 image/phase/cohort observations.
 
 Optional OpenCV/NPP comparisons use
 [dedicated adapters](benchmark/bridge_opencv.cpp). Both get a four-pixel reflect101
@@ -182,6 +179,9 @@ CUDA_VISIBLE_DEVICES=0 taskset -c 16-23 \
   build/benchmark-venv/bin/python benchmark/run.py \
   --backends cpu cuda opencv npp --output build/benchmark \
   --timing --workers 8 --warmup 10 --rounds 100 --batch 5 --seed 20261009
+
+build/benchmark-venv/bin/python benchmark/summarize.py \
+  --input build/benchmark --output benchmark/results
 ```
 
 For a CPU-only machine use `--backends cpu`, without CUDA/OpenCV dependencies.
@@ -253,67 +253,77 @@ refinement share the same two medians and output pass. See the
 
 Full-image mean PSNR, averaging both CFA phases per source image:
 
-| Dataset | Full paper Menon | SoftMenon | SoftMenon − paper |
+| Dataset / input cohort | Full paper Menon | SoftMenon | SoftMenon − paper |
 |---|---:|---:|---:|
-| Kodak24 | 39.2055 | **39.5499** | +0.3443 |
-| McMaster | 34.2268 | **34.4812** | +0.2544 |
-| Urban100 | 33.6647 | **33.9078** | +0.2431 |
-| DIV2K validation | 38.3940 | **38.7985** | +0.4045 |
-| BSDS500 test | 37.7975 | **38.6566** | +0.8591 |
-| All 442, original | 36.9285 | **37.4928** | **+0.5643** |
-| All 442, Inset16 | 36.7859 | **37.3762** | **+0.5903** |
+| Kodak24 | 39.2055 | **39.9567** | +0.7512 |
+| McMaster | 34.2268 | **34.4662** | +0.2395 |
+| Urban100 | 33.6647 | **34.2896** | +0.6250 |
+| DIV2K validation | 38.3940 | **38.9720** | +0.5780 |
+| BSDS500 test | 37.7975 | **39.0616** | +1.2641 |
+| All 442, original | 36.9285 | **37.8231** | +0.8947 |
+| All 442, Inset16 | 36.7859 | **37.6995** | +0.9136 |
 
-Original pooled PSNR improves 0.4294 dB versus paper Menon. Interior8 mean PSNR
-improves 0.5803 dB and border8 mean improves 0.4933 dB. The advantage is not
-confined to a border or one aggregation rule.
+SoftMenon wins on **411 of 442 scenes** and loses on 31 against full paper
+Menon, averaging the two phases per scene. Its largest loss is Urban100
+`img_055_SRF_2_HR.png`, **−1.6899 dB**. Pooled PSNR improves **0.5736 dB**;
+Interior8 and Border8 mean PSNR improve **0.9081 dB** and **0.7576 dB**.
 
-SoftMenon wins on 377 scenes and loses on 65 versus paper Menon, after averaging
-phases per scene. Its worst original loss is Urban100 `img_011_SRF_2_HR.png`,
-**−7.6304 dB** (37.8043 versus 45.4347 dB). The Inset16 loss is −2.1966 dB.
-These are average improvements, not a guarantee for every scene.
+The pointwise 95% bootstrap interval for the mean gain is **[0.8411, 0.9496] dB**,
+using 10,000 dataset-stratified source-image resamples with both phases kept
+together (seed 20261010). This interval describes this evaluation corpus and
+does not account for parameter selection.
 
-The pointwise 95% bootstrap interval for the original mean gain is
-**[+0.4984, +0.6225] dB**. It uses 10,000 dataset-stratified source-image resamples,
-keeping both phases together, seed 20261010. These images were also used during
-algorithm development. The interval is not adjusted for that selection and is
-not a held-out estimate of generalization. Results cover rendered uint8 RGB
-remosaicing; linear sensor RAW and temporal behavior require separate evaluation.
+These are averages, not a guarantee for every scene. Mean per-image PSNR and
+pooled PSNR use different weighting, as defined above; inspect per-image records
+when evaluating fine textures or color boundaries. This corpus was used to
+choose algorithm parameters, so its results are not an independent estimate of
+generalization. Results cover rendered uint8 RGB remosaicing; linear sensor RAW
+and temporal behavior require separate evaluation.
 
 The [README comparison](README.md#measured-comparison) includes the remaining
 library algorithms and external baselines under the same metric contract.
 
 ## Timing results
 
-The README's CPU/CUDA table uses the all-method run in
-[softmenon-performance.json](benchmark/results/softmenon-performance.json),
-`standard_mean_of_phase_medians_ms`. External adapter timings come from a
-separate run on the same workstation. All calls include the work described in
-the timing protocol above.
+The README table reports the mean of the RGGB and BGGR median latencies from
+[CPU](benchmark/results/timing-cpu.json),
+[CUDA](benchmark/results/timing-cuda.json),
+[OpenCV](benchmark/results/timing-opencv.json), and
+[NPP](benchmark/results/timing-npp.json). All calls include the work described
+in the timing protocol above.
 
-Additional SoftMenon measurements from the same workstation, mean of the
-RGGB/BGGR medians:
+| SoftMenon path | Latency ms | FPS |
+|---|---:|---:|
+| CPU, eight workers, native AVX512 dispatch | 0.477 | 2,095 |
+| CUDA, synchronous host-to-host | 0.371 | 2,693 |
 
-| Path | SoftMenon ms |
-|---|---:|
-| CPU, 8 workers, native AVX512 dispatch | 0.496665 |
-| CPU, 1 worker, native AVX512 dispatch | 2.774459 |
-| CPU, 8 workers, forced AVX2 dispatch | 0.791920 |
-| CPU, 1 worker, forced AVX2 dispatch | 5.260995 |
-| CUDA, synchronous host-to-host | 0.366876 |
+FPS is `1000 / mean of phase-median milliseconds`; it describes repeated
+synchronous calls under this protocol.
 
-These are a separate timing session from the README table, not different
-algorithms. The AVX2 experiment forces dispatch on the same Threadripper;
-it does not measure a different AVX2-only processor. ARM CPU and Jetson runtime
-performance remain unmeasured. Do not interpret sub-percent timing differences
-as speedups without stable controls and repeated measurements.
+CPU results must identify the worker count and instruction-set dispatch;
+CUDA host-to-host results include transfers and synchronization. ARM CPU and
+Jetson runtime performance remain unmeasured. Report repeated measurements when
+comparing small timing differences.
 
 ## Implementation and correctness
 
-SoftMenon's AVX512 green kernel handles 16 chromatic sites per 32-pixel strip;
-AVX2 extracts the same sites from packed byte pairs. Measured-green sites pass
-through unchanged. Scalar/vector tails retain the same candidate, score,
-blend, rounding, and clipping results. The cleanup uses signed chroma medians;
-CUDA uses a packed comparison network and one cleanup launch.
+SoftMenon's AVX512 green kernel computes 32 chromatic sites per 64-pixel strip.
+It caches signed 16-bit horizontal and vertical color differences, then reuses
+them when forming the neighborhood scores. AVX2 and scalar paths use the same
+estimates, scores, squared weights, rounding, and clipping. The CPU processes
+64-row output strips through green interpolation, red/blue reconstruction, and
+median refinement. Overlapping halos provide neighboring samples without
+sharing writable intermediate buffers between workers. Thread-local scratch
+is reused; allocation failures either take an exact fallback or return an error
+after draining queued work. Eight-pixel RAW padding covers the green stencil and
+its reconstruction halo.
+
+The SIMD CPU blend uses double-precision arithmetic for the weighted integer sum.
+Its bounded uint8 inputs make those products and sums exact, and the quotient
+has enough precision to preserve the integer rounding rule. CUDA computes the
+same blend with integer arithmetic. The cleanup uses signed chroma medians;
+CUDA uses a packed comparison network and one cleanup launch. Every measured
+Bayer sample remains exact.
 
 Full paper Menon uses 192×96 CPU output tiles with a ten-pixel RAW halo, covering
 its complete dependency radius of nine. Its seven stages and cached directional
@@ -323,22 +333,16 @@ Each worker retains 673,920 bytes of paper scratch, about 5.14 MiB at eight
 workers, in addition to input/output and wrapper padding. AVX512, AVX2, and
 portable paths preserve the paper's refinement, tie, boundary, and rounding rules.
 
-Recorded validation includes:
+Validation covers:
 
-- All 1,768 SoftMenon CPU/CUDA image/phase/cohort outputs match byte for byte,
-  and all measured CFA samples remain unchanged.
-- Final binaries match recorded SoftMenon and paper hashes in 7,072 checks:
-  442 images × two cohorts × two phases × two methods × two backends.
-- GCC, Clang, and ASan/UBSan pass all three CPU CTests. The independent sorted-median
-  oracle covers 600 public API outputs and 1,600 direct cleanup outputs.
-- Forced AVX2 initial reconstruction matches its reference on 288 comparisons
-  spanning 67.4 million pixels.
-- CUDA passes 192 regression cases and 160 cases each under compute-sanitizer
-  memcheck and initcheck, with zero errors. SM87 and SM120 compile; runtime
-  checks use SM120.
-- Paper Menon matches its reference on 1,768 corpus reconstructions. Independent
-  testing covers 292 synthetic cases, 1,195 public API comparisons, and 1,168
-  direct scalar/runtime/AVX2/AVX512 comparisons.
+- Byte-for-byte CPU/CUDA agreement across all 1,768 image/phase/cohort outputs,
+  with every measured CFA sample preserved.
+- Independent integer green and sorted-median oracles, scalar/SIMD agreement,
+  odd and tiny dimensions, strided buffers, and row guards.
+- Worker-count invariance, scratch reuse, allocation-failure behavior, and exact
+  recovery on subsequent frames.
+- CUDA memory and initialization checks with Compute Sanitizer.
+- The full paper Menon implementation against its independent rational reference.
 
 CPU tests can be rerun without downloading the dataset:
 
@@ -363,27 +367,22 @@ the checker validates source, binary, dataset, and reference-result hashes.
 
 ## Result artifacts
 
-The measured algorithm sources are pinned by the source hashes in the result
-metadata; the SoftMenon implementation is at commit
-`04836b961d808c72cf3e703cd9617831721778a6`. Documentation and reporting edits do
-not change those algorithm outputs.
+Result metadata pins the measured source files, compiled libraries, dataset
+manifest, and output hashes.
 
-- [Per-image quality records](benchmark/results/softmenon-quality.jsonl.gz),
-  [decoder/build metadata](benchmark/results/softmenon-quality.jsonl.meta.json),
-  and [aggregates and worst scenes](benchmark/results/softmenon-quality-summary.json).
-- [Timing samples and build provenance](benchmark/results/softmenon-performance.json).
-- [SoftMenon exactness checks](benchmark/results/softmenon-quality-exactness.json)
-  and [final output verification](benchmark/results/softmenon-final-output-verification.json).
-- [Paper reference checks](benchmark/results/paper-cpu-exactness.json).
+- Per-image quality records for [CPU](benchmark/results/quality-cpu.json.gz),
+  [CUDA](benchmark/results/quality-cuda.json.gz),
+  [OpenCV](benchmark/results/quality-opencv.json.gz), and
+  [NPP](benchmark/results/quality-npp.json.gz), including decoder and build provenance.
+- [Quality aggregates and comparisons](benchmark/results/summary.json).
+- Raw timing samples for [CPU](benchmark/results/timing-cpu.json),
+  [CUDA](benchmark/results/timing-cuda.json),
+  [OpenCV](benchmark/results/timing-opencv.json), and
+  [NPP](benchmark/results/timing-npp.json).
+- [Example image records](benchmark/results/examples.json).
+- [Full-corpus output verification](benchmark/results/output-verification.json).
 
-The original measurement files retain their immutable identifiers and control
-records for provenance. In those files, `refined_softmenon` identifies the
-SoftMenon algorithm documented here, and `paper` identifies full paper Menon.
-For the additional timing session use the `candidate` records; the README
-uses the `standard_cpu` and `standard_cuda` records. Archived controls are not
-additional supported SoftMenon algorithms. The normal production runner emits
-one `softmenon` method.
-
-The dataset manifest/downloader and production runner above are sufficient to
-reconstruct the inputs and reproduce the supported methods' scores, timings,
-and example images. Exploratory notes and experiment plans stay local.
+The production runner emits one `softmenon` method alongside `bilinear`,
+`malvar`, and `menon2007`. The dataset manifest/downloader and production
+runner above reconstruct the inputs and reproduce the supported methods'
+scores, timings, and example images.

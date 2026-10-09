@@ -83,4 +83,3 @@ EXTERNAL_EXPORT int bench_process(void* p,const uint8_t* raw,uint8_t* bgr,
         return cudaStreamSynchronize(c.npp.hStream)==cudaSuccess ? 0 : -3;
     }catch(...){cudaStreamSynchronize(c.npp.hStream);return -3;}
 }
-EXTERNAL_EXPORT int bench_diagnostic(void*,const uint8_t*,uint8_t*,int,int,int,int,int,int){return -4;}

@@ -183,7 +183,7 @@ int main() {
         for (int phase : {SARONIC_DEBAYER_RGGB, SARONIC_DEBAYER_BGGR}) {
             for (const auto& shape : tiny)
                 for (int kind = 0; kind <= 6; ++kind) check(shape[0], shape[1], kind, phase);
-            // Straddle 8/16/32-pixel SIMD, historical tile boundaries, and
+            // Straddle 8/16/32-pixel SIMD, tile boundaries, and
             // the wrapper's uneven row partitions with independent strides.
             const int boundaries[][2] = {{31,33},{32,65},{33,64},{63,129},{64,127},{65,128},
                 {127,63},{128,64},{129,65},{255,127},{256,128},{257,129}};

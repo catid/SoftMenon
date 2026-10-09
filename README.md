@@ -10,13 +10,13 @@ and API names are retained.
 - **Bilinear** — simple local interpolation.
 - **Malvar 2004** — fixed cross-channel correction filters.
 - **Menon 2007** — full paper DDFAPD, including refinement.
-- **SoftMenon** — soft green decisions followed by a 3×3 chroma-median
-  refinement of missing green and red/blue, preserving every measured sample.
+- **SoftMenon** — neighborhood directional scores and squared soft green weights,
+  followed by a 3×3 chroma-median refinement that preserves every measured sample.
 
-SoftMenon scores **0.564 dB above full paper Menon** on our 442-image benchmark.
-It improves mean quality on all five datasets versus paper Menon, with wins on 377/442
-scenes; some scenes still favor Menon. [benchmarks.md](benchmarks.md) reports
-the evaluation protocol, regressions, raw results, and reproduction instructions.
+SoftMenon scores **37.823 dB**, **0.895 dB above full paper Menon**, on our
+442-image benchmark. These are average results; individual scenes can favor
+another method. [benchmarks.md](benchmarks.md) reports the evaluation protocol,
+quality comparisons, raw results, and reproduction instructions.
 
 ## How SoftMenon works
 
@@ -27,53 +27,89 @@ algorithm and benchmark baseline.
 
 ```mermaid
 flowchart LR
-    RAW["Bayer samples<br/>RGGB or BGGR"] --> G["1. Estimate missing green<br/>Blend horizontal and vertical candidates"]
+    RAW["Bayer samples<br/>RGGB or BGGR"] --> G["1. Estimate missing green<br/>Neighborhood scores and squared soft weights"]
     G --> RGB["2. Estimate missing red and blue<br/>Interpolate differences from green"]
     RGB --> M["3. Refine missing colors<br/>3 x 3 chroma medians"]
     M --> OUT["BGR output<br/>Measured samples preserved"]
 ```
 
 **1. Soft directional green.** At each measured red or blue pixel, estimate
-green horizontally and vertically. Each candidate averages the two adjacent
+green horizontally and vertically. Each estimate averages the two adjacent
 green samples and adds a correction from the measured center color and its
 same-color neighbors two pixels away. Let `C0` be the measured red or blue
 center value; `GL, GR, GU, GD` are measured green one pixel left, right, up,
 and down. `CL2, CR2, CU2, CD2` are samples of the center's color two pixels
 away in those directions.
 
-`Gh` and `Gv` are the horizontal and vertical green candidates. `Sh` and `Sv`
-score their consistency with neighboring color/green pairs:
-
 ```text
 Gh = round((GL + GR)/2) + round((2*C0 - CL2 - CR2)/4)
 Gv = round((GU + GD)/2) + round((2*C0 - CU2 - CD2)/4)
-
-Sh = abs((C0 - Gh) - (CL2 - GL)) + abs((C0 - Gh) - (CR2 - GR))
-Sv = abs((C0 - Gv) - (CU2 - GU)) + abs((C0 - Gv) - (CD2 - GD))
 ```
 
-Each `round` rounds to the nearest integer, with half ties toward positive
-infinity; the two terms in each candidate are rounded separately. Lower scores
-receive more weight, so `Sv + 1` weights `Gh` and `Sh + 1` weights `Gv`:
+Each `round` means nearest integer, with half ties toward positive infinity.
+The two terms in each estimate are rounded separately; `Gh` and `Gv` are not
+clipped yet. Evaluate these estimates at neighboring measured red/blue sites,
+and form the color differences **at those same sites**:
 
 ```text
-G = clip(round(((Sv + 1)*Gh + (Sh + 1)*Gv) / (Sh + Sv + 2)))
+Dh(q) = C(q) - Gh(q)
+Dv(q) = C(q) - Gv(q)
 ```
 
-This blend changes smoothly as the scores change. Measured green pixels pass
-through unchanged. Here is the sampling footprint around a measured red pixel;
-swap R and B for a measured blue pixel:
+A direction scores well when its color differences vary little along that
+direction, both on the center line and nearby parallel lines. For horizontal
+interpolation, compare the `Dh` values joined below. Each line segment contributes
+its labeled weight times the absolute difference between its endpoints:
 
 ```text
- .   .   R   .   .
- .   .   G   .   .
- R   G  [R]  G   R
- .   .   G   .   .
- .   .   R   .   .
+                 x=-2    -1      0      +1     +2
 
-Horizontal candidate: left/right G plus horizontal R correction
-Vertical candidate:   up/down G plus vertical R correction
+y=-2               o------1------o------1------o
+y=-1                       o------1------o
+y= 0               o------3-----[p]-----3------o
+y=+1                       o------1------o
+y=+2               o------1------o------1------o
+
+Each o is a measured red/blue site carrying Dh.
+Every segment joins sites of the same measured color.
+For the vertical score, transpose the stencil and use Dv.
 ```
+
+Define the horizontal and vertical consistency at a site `q` as follows.
+Coordinates are `(x,y)` offsets:
+
+```text
+Lh(q) = abs(Dh(q) - Dh(q + (-2,0))) + abs(Dh(q) - Dh(q + (2,0)))
+Lv(q) = abs(Dv(q) - Dv(q + (0,-2))) + abs(Dv(q) - Dv(q + (0,2)))
+
+Sh = 3*Lh(p) + Lh(p + (0,-2)) + Lh(p + (0,2))
+   + abs(Dh(p + (-1,-1)) - Dh(p + (1,-1)))
+   + abs(Dh(p + (-1, 1)) - Dh(p + (1, 1)))
+
+Sv = 3*Lv(p) + Lv(p + (-2,0)) + Lv(p + (2,0))
+   + abs(Dv(p + (-1,-1)) - Dv(p + (-1,1)))
+   + abs(Dv(p + ( 1,-1)) - Dv(p + ( 1,1)))
+```
+
+The score reaches two pixels from the center in color-difference space.
+Computing those differences needs RAW samples up to four pixels away. Stabilize
+the scores by adding one, square them, and give each green estimate the weight
+from the opposite direction:
+
+```text
+Wh = (Sv + 1)^2
+Wv = (Sh + 1)^2
+G  = clip(round((Wh*Gh + Wv*Gv) / (Wh + Wv)))
+```
+
+A lower horizontal score therefore favors `Gh`; a lower vertical score favors
+`Gv`. Squaring strengthens that preference while retaining a soft blend.
+`clip` limits the result to `[0,255]`. Measured green passes through unchanged.
+RAW neighbors beyond the image use phase-preserving reflect-101 reflection.
+
+These directional estimates follow [Hamilton–Adams](https://patents.google.com/patent/US5629734A/en),
+and the neighborhood consistency stencil follows [Menon, Andriani and Calvagno (2007)](https://doi.org/10.1109/TIP.2006.884928).
+SoftMenon uses the squared soft weighting above, followed by the two stages below.
 
 **2. Initial color reconstruction.** With green available at every pixel,
 estimate missing red and blue through their differences from green. For a
@@ -153,10 +189,12 @@ the other missing color. Both medians read the same unchanged image, so an
 updated pixel never affects its neighbors during this pass. Neighborhoods at
 the image edge use reflect-101 reflection.
 
+Median filtering of color differences is a classical artifact-suppression idea;
+see [Freeman's color-reconstruction patent](https://patents.google.com/patent/US4774565A/en).
 SoftMenon uses the same chroma medians to refine missing green and red/blue
 in a single cleanup pass. Every measured Bayer sample remains exact.
 The local color-difference assumption can still fail
-on fine patterns or sharp color boundaries; see the measured regressions and
+on fine patterns or sharp color boundaries; see the quality results and
 exact refinement equations in [benchmarks.md](benchmarks.md#softmenon-refinement).
 
 The implementation is in [the initial CPU stages](cpu/cpu_kernel.cpp),
@@ -169,28 +207,29 @@ The implementation is in [the initial CPU stages](cpu/cpu_kernel.cpp),
 uses CUDA outputs; CPU scores agree at the displayed precision. Latency is warm
 **1920×1080 host-to-host**, mean of the two phase medians. CPU: eight physical
 cores of a Threadripper PRO 9985WX. GPU: RTX PRO 6000 Blackwell Max-Q; transfers
-included. These are workstation results, not Jetson measurements.
+included. FPS is `1000 / mean phase-median milliseconds`. These are workstation
+results, not Jetson measurements.
 
-| Method | PSNR dB | CPU ms | CUDA ms |
-|---|---:|---:|---:|
-| Bilinear | 28.914 | 0.278 | 0.353 |
-| Malvar 2004 | 33.963 | 0.638 | 0.352 |
-| Menon 2007, full paper | 36.928 | 1.204 | 0.541 |
-| SoftMenon | **37.493** | **0.469** | 0.368 |
-| OpenCV bilinear | 28.914 | 0.310 | — |
-| OpenCV edge-aware | 28.927 | 0.328 | — |
-| OpenCV VNG, registration corrected | 33.509 | 6.748 | — |
-| NPP CFA reconstruction | 29.103 | — | 0.406 |
+| Method | PSNR dB | CPU ms | CPU FPS | CUDA ms | CUDA FPS |
+|---|---:|---:|---:|---:|---:|
+| Bilinear | 28.914 | 0.283 | 3,536 | 0.347 | 2,881 |
+| Malvar 2004 | 33.963 | 0.642 | 1,557 | 0.347 | 2,880 |
+| Menon 2007, full paper | 36.928 | 1.193 | 839 | 0.537 | 1,863 |
+| SoftMenon | **37.823** | 0.477 | 2,095 | 0.371 | 2,693 |
+| OpenCV bilinear | 28.914 | 0.303 | 3,300 | — | — |
+| OpenCV edge-aware | 28.927 | 0.319 | 3,136 | — | — |
+| OpenCV VNG, registration corrected | 33.509 | 6.732 | 149 | — | — |
+| NPP CFA reconstruction | 29.103 | — | — | 0.403 | 2,484 |
 
-SoftMenon's AVX2/AVX512 green kernels compute estimates only at pixels where
-green is missing. Its cleanup reuses two chroma medians for all missing colors.
+SoftMenon's SIMD green kernels compute estimates only where green is missing.
+The CPU caches directional color differences and processes strips through all
+three stages while their intermediates fit in cache. Its cleanup reuses two
+chroma medians for all missing colors.
 
-The table uses an all-method CPU/CUDA run; external adapter
-timings come from a separate run on the same workstation.
+The table uses the recorded CPU, CUDA, OpenCV, and NPP runs on the same workstation.
 Dataset splits, hashes, decoder rules, baseline validation, timing
 scope, external adapter details, validation results, and reproduction commands
-are in [benchmarks.md](benchmarks.md). Historical blue-only PSNR figures have
-been withdrawn; these scores include all three channels.
+are in [benchmarks.md](benchmarks.md). Scores include all three channels.
 
 ## Examples
 
@@ -203,11 +242,11 @@ Kodak `kodim11`, BGGR; individual full-image PSNR:
 | Bilinear: 28.761 dB | Malvar: 34.366 dB |
 |---|---|
 | ![Bilinear](bilinear.out.png) | ![Malvar](malvar2004.out.png) |
-| **Paper Menon: 39.102 dB** | **SoftMenon: 39.511 dB** |
+| **Paper Menon: 39.102 dB** | **SoftMenon: 40.053 dB** |
 | ![Menon](menon2007.out.png) | ![SoftMenon](softmenon.out.png) |
 
 Kodak `kodim19`, BGGR: [paper Menon, 39.918 dB](menon2007.lighthouse.png)
-and [SoftMenon, 40.254 dB](softmenon.lighthouse.png).
+and [SoftMenon, 40.932 dB](softmenon.lighthouse.png).
 Images courtesy of Kodak / [Rich Franzen's collection](https://r0k.us/graphics/kodak/).
 
 ## Build and use
@@ -225,10 +264,12 @@ supports `Debayer(8)` to select eight workers, including the calling thread.
 See [CPU usage](cpu/README.md).
 
 The [CUDA C API](c/include/debayer.h) accepts device buffers. Its workspace
-entry points avoid per-frame allocation; the [C++ wrapper](cpp/include/debayer_cpp.h)
+entry points avoid per-frame allocation. Device buffers require a four-pixel
+halo on every side; use `SARONIC_DEBAYER_PAD` for allocation and origins.
+The [C++ wrapper](cpp/include/debayer_cpp.h)
 manages transfers and reusable scratch. The [Rust API](rust/src/lib.rs) exposes
 `SoftMenonRggb2Bgr` and `SoftMenonBggr2Bgr`. Menon entry points implement
 the complete paper baseline.
 
-`nix develop` provides the original development environment. For dataset download
+`nix develop` provides the build environment. For dataset download
 and standalone CPU/CUDA benchmark builds, follow [benchmarks.md](benchmarks.md).

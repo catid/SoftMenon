@@ -28,11 +28,11 @@ bool overlapping(const uint8_t* input, size_t input_bytes,
     return a <= b ? b - a < input_bytes : a - b < output_bytes;
 }
 
-enum class Method { RggbMalvar, BggrMalvar, RggbBilinear, BggrBilinear, RggbMenon, BggrMenon };
+enum class Method { RggbMalvar, BggrMalvar, RggbBilinear, BggrBilinear };
 
 cudaError_t demosaic(Method method, cudaStream_t stream, int32_t width, int32_t height,
                     size_t input_pitch, size_t output_pitch,
-                    uint8_t* input_data, uint8_t* output_data, bool soft = false) {
+                    uint8_t* input_data, uint8_t* output_data) {
     if (!valid_buffer(width, height, input_pitch, 1, input_data) ||
         !valid_buffer(width, height, output_pitch, 3, output_data)) {
         return cudaErrorInvalidValue;
@@ -61,33 +61,11 @@ cudaError_t demosaic(Method method, cudaStream_t stream, int32_t width, int32_t 
     case Method::BggrBilinear:
         bggr_bilinear<<<grid, block, 0, stream>>>(raw, raw_pitch, bgr, bgr_pitch, width, height);
         break;
-    case Method::RggbMenon: {
-        rggb_menon2007_g<<<grid, block, 0, stream>>>(raw, raw_pitch, bgr, bgr_pitch, width, height, soft);
-        const cudaError_t error = cudaGetLastError();
-        if (error != cudaSuccess) return error;
-        rggb_menon2007_rb<<<grid, block, 0, stream>>>(bgr, bgr_pitch, width, height);
-        break;
-    }
-    case Method::BggrMenon: {
-        bggr_menon2007_g<<<grid, block, 0, stream>>>(raw, raw_pitch, bgr, bgr_pitch, width, height, soft);
-        const cudaError_t error = cudaGetLastError();
-        if (error != cudaSuccess) return error;
-        bggr_menon2007_rb<<<grid, block, 0, stream>>>(bgr, bgr_pitch, width, height);
-        break;
-    }
     }
     return cudaGetLastError();
 }
 
 } // namespace
-
-// Internal benchmark control; deliberately absent from the public C API.
-cudaError_t debayer_menon_diagnostic(cudaStream_t stream, int32_t width, int32_t height,
-    size_t input_pitch, size_t output_pitch, uint8_t* input_data, uint8_t* output_data,
-    bool rggb, bool soft) {
-    return demosaic(rggb ? Method::RggbMenon : Method::BggrMenon, stream, width, height,
-        input_pitch, output_pitch, input_data, output_data, soft);
-}
 
 namespace {
 cudaError_t advanced_allocating(bool soft, bool rggb, cudaStream_t stream, int32_t width, int32_t height,
@@ -153,7 +131,7 @@ bool valid_workspace(int width, int height, size_t raw_pitch, size_t bgr_pitch,
     uint8_t* raw, uint8_t* bgr, int rggb, void* workspace, size_t bytes, size_t required) {
     if (!required || !workspace || bytes < required || (reinterpret_cast<uintptr_t>(workspace) & 3) ||
         (rggb != 0 && rggb != 1) || !advanced_buffers(width, height, raw_pitch, bgr_pitch, raw, bgr)) return false;
-    const size_t rows = static_cast<size_t>(height) + 4;
+    const size_t rows = static_cast<size_t>(height) + 2 * SARONIC_DEBAYER_PAD;
     const auto* scratch = static_cast<uint8_t*>(workspace);
     return !overlapping(raw, raw_pitch * rows, scratch, required) &&
            !overlapping(bgr, bgr_pitch * rows, scratch, required);
@@ -190,14 +168,16 @@ cudaError_t advanced_allocating(bool soft, bool rggb, cudaStream_t stream, int32
 } // namespace
 
 size_t debayer_menon2007_workspace_size(int32_t width, int32_t height) {
-    if (width < 2 || height < 2 || width > INT32_MAX - 4 || height > INT32_MAX - 4) return 0;
+    if (width < 2 || height < 2 || width > INT32_MAX - 2 * SARONIC_DEBAYER_PAD ||
+        height > INT32_MAX - 2 * SARONIC_DEBAYER_PAD) return 0;
     const size_t max_size = static_cast<size_t>(std::numeric_limits<ptrdiff_t>::max());
     if (static_cast<size_t>(width) > max_size / 33 / height) return 0;
     return static_cast<size_t>(width) * height * 33;
 }
 
 size_t debayer_softmenon_workspace_size(int32_t width, int32_t height) {
-    if (width < 2 || height < 2 || width > INT32_MAX - 4 || height > INT32_MAX - 4) return 0;
+    if (width < 2 || height < 2 || width > INT32_MAX - 2 * SARONIC_DEBAYER_PAD ||
+        height > INT32_MAX - 2 * SARONIC_DEBAYER_PAD) return 0;
     const size_t pitch = soft_pitch(width), rows = static_cast<size_t>(height) + 4;
     if (pitch > static_cast<size_t>(std::numeric_limits<ptrdiff_t>::max()) / rows) return 0;
     return pitch * rows;
@@ -212,8 +192,8 @@ cudaError_t debayer_menon2007_with_workspace(cudaStream_t stream, int32_t width,
     const size_t pixels = static_cast<size_t>(width) * height;
     auto* integers = static_cast<int32_t*>(workspace);
     libdebayer_menon2007::Buffers buffers{
-        input_data + 2 * input_pitch + 2, input_pitch,
-        output_data + 2 * output_pitch + 6, output_pitch, width, height, rggb != 0,
+        input_data + SARONIC_DEBAYER_PAD * input_pitch + SARONIC_DEBAYER_PAD, input_pitch,
+        output_data + SARONIC_DEBAYER_PAD * output_pitch + 3 * SARONIC_DEBAYER_PAD, output_pitch, width, height, rggb != 0,
         integers, integers + pixels, integers + 2 * pixels, integers + 5 * pixels,
         reinterpret_cast<uint8_t*>(integers + 8 * pixels)};
     const dim3 block(32, 8),
@@ -235,21 +215,21 @@ cudaError_t debayer_softmenon_with_workspace(cudaStream_t stream, int32_t width,
     if (!valid_workspace(width, height, input_pitch, output_pitch, input_data, output_data,
         rggb, workspace, workspace_bytes, required)) return cudaErrorInvalidValue;
     const size_t pitch = soft_pitch(width);
-    const uint8_t* raw = input_data + 2 * input_pitch + 2;
+    const uint8_t* raw = input_data + SARONIC_DEBAYER_PAD * input_pitch + SARONIC_DEBAYER_PAD;
     uint8_t* intermediate = static_cast<uint8_t*>(workspace) + 2 * pitch + 6;
     const dim3 block(KERNEL_BLOCK_SIZE, KERNEL_BLOCK_SIZE);
     const dim3 grid(((width + 1) / 2 + block.x - 1) / block.x,
                     ((height + 1) / 2 + block.y - 1) / block.y);
-    if (rggb) rggb_menon2007_g<<<grid, block, 0, stream>>>(raw, input_pitch, intermediate, pitch, width, height, true);
-    else bggr_menon2007_g<<<grid, block, 0, stream>>>(raw, input_pitch, intermediate, pitch, width, height, true);
+    if (rggb) rggb_softmenon_g<<<grid, block, 0, stream>>>(raw, input_pitch, intermediate, pitch, width, height);
+    else bggr_softmenon_g<<<grid, block, 0, stream>>>(raw, input_pitch, intermediate, pitch, width, height);
     cudaError_t status = cudaGetLastError();
     if (status != cudaSuccess) return status;
-    if (rggb) rggb_menon2007_rb<<<grid, block, 0, stream>>>(intermediate, pitch, width, height);
-    else bggr_menon2007_rb<<<grid, block, 0, stream>>>(intermediate, pitch, width, height);
+    if (rggb) rggb_softmenon_rb<<<grid, block, 0, stream>>>(intermediate, pitch, width, height);
+    else bggr_softmenon_rb<<<grid, block, 0, stream>>>(intermediate, pitch, width, height);
     status = cudaGetLastError();
     if (status != cudaSuccess) return status;
     return softmenon_chroma_median(intermediate, pitch,
-        output_data + 2 * output_pitch + 6, output_pitch, width, height, rggb != 0, stream);
+        output_data + SARONIC_DEBAYER_PAD * output_pitch + 3 * SARONIC_DEBAYER_PAD, output_pitch, width, height, rggb != 0, stream);
 }
 
 cudaError_t debayer_rggb2bgr_softmenon(cudaStream_t stream, int32_t width, int32_t height,

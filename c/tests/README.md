@@ -11,15 +11,16 @@ compute-sanitizer --tool memcheck --error-exitcode 77 build/c/debayer_regression
 compute-sanitizer --tool initcheck --error-exitcode 77 build/c/debayer_regression --uninitialized-output
 ```
 
-The CUDA regression covers all five exported reconstruction functions at tiny,
+The CUDA regression covers all eight exported reconstruction functions at tiny,
 odd, aligned, unaligned, 1920×1080, and 1921×1081 dimensions. It checks complete
 flat-color reconstruction, exact native-sample preservation, independent CPU
-bilinear/MHC filters, phase-preserving reflected input padding, allocation
+bilinear/MHC filters, a scalar SoftMenon pipeline with int64 weighted blending
+and independently sorted chroma medians, phase-preserving reflected input padding, allocation
 canaries, untouched output halos and stride bytes, invalid arguments, and
 independence from previous output contents. The initcheck mode leaves output
 interiors uninitialized to detect reads before the Menon stages write them.
 
 The separate C translation unit verifies that the public API remains usable
 and linkable from C. Installed consumers may use `find_package(libdebayer CONFIG
-REQUIRED)` with target `libdebayer::debayer`, or `pkg-config libdebayer`. The old
+REQUIRED)` with target `libdebayer::debayer`, or `pkg-config libdebayer`. The
 explicit `<prefix>/lib/cmake` package location remains supported.

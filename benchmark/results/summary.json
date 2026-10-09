@@ -1,0 +1,2034 @@
+{
+  "images": 442,
+  "manifest_sha256": "aa364cbc36ffb7914422880f8477c74f191d796b64f3a9dc65156c9f0eb1838c",
+  "quality": {
+    "cpu": [
+      {
+        "dataset": "all",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 28.91372754889762,
+        "pooled_psnr": 28.888393714948172
+      },
+      {
+        "dataset": "all",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 33.9632046826814,
+        "pooled_psnr": 33.784173890922695
+      },
+      {
+        "dataset": "all",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 36.928451287130706,
+        "pooled_psnr": 35.82994022707463
+      },
+      {
+        "dataset": "all",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 37.823137995749875,
+        "pooled_psnr": 36.40357424186917
+      },
+      {
+        "dataset": "bsds500",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 28.86732959920312,
+        "pooled_psnr": 27.68537439823014
+      },
+      {
+        "dataset": "bsds500",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 34.487794242695465,
+        "pooled_psnr": 33.28526385742866
+      },
+      {
+        "dataset": "bsds500",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 37.797466488490464,
+        "pooled_psnr": 36.6005711481974
+      },
+      {
+        "dataset": "bsds500",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 39.06155441357855,
+        "pooled_psnr": 38.00796973313196
+      },
+      {
+        "dataset": "div2k",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 31.611541879402147,
+        "pooled_psnr": 29.553411886485907
+      },
+      {
+        "dataset": "div2k",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 36.4031262721564,
+        "pooled_psnr": 34.40336361482454
+      },
+      {
+        "dataset": "div2k",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 38.394016291305,
+        "pooled_psnr": 36.174679770048414
+      },
+      {
+        "dataset": "div2k",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 38.97199421515501,
+        "pooled_psnr": 36.68462401372957
+      },
+      {
+        "dataset": "kodak24",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 29.471798362522193,
+        "pooled_psnr": 28.50179385295538
+      },
+      {
+        "dataset": "kodak24",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 34.802553703058464,
+        "pooled_psnr": 33.97302124753624
+      },
+      {
+        "dataset": "kodak24",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 39.20554509961201,
+        "pooled_psnr": 38.28863623735193
+      },
+      {
+        "dataset": "kodak24",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 39.95674765451795,
+        "pooled_psnr": 39.211559911146416
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 32.32442400599182,
+        "pooled_psnr": 31.126557882859114
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 34.46204444232853,
+        "pooled_psnr": 33.428914689860584
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 34.226762896274344,
+        "pooled_psnr": 32.94649192927455
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 34.46622636628985,
+        "pooled_psnr": 33.129297097245704
+      },
+      {
+        "dataset": "urban100",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 25.560846760235233,
+        "pooled_psnr": 24.708030628395225
+      },
+      {
+        "dataset": "urban100",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 30.18286905155131,
+        "pooled_psnr": 29.386497652425113
+      },
+      {
+        "dataset": "urban100",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 33.66465727559553,
+        "pooled_psnr": 32.08496640862244
+      },
+      {
+        "dataset": "urban100",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 34.28962671588588,
+        "pooled_psnr": 32.635988638381114
+      },
+      {
+        "dataset": "all",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 28.80995183968524,
+        "pooled_psnr": 28.872241667087476
+      },
+      {
+        "dataset": "all",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 33.88311832556817,
+        "pooled_psnr": 33.77962484956018
+      },
+      {
+        "dataset": "all",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 36.78588671923214,
+        "pooled_psnr": 35.800335936099245
+      },
+      {
+        "dataset": "all",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 37.69949982617464,
+        "pooled_psnr": 36.37396145054423
+      },
+      {
+        "dataset": "bsds500",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 28.665084318408663,
+        "pooled_psnr": 27.48757889195122
+      },
+      {
+        "dataset": "bsds500",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 34.29513167880502,
+        "pooled_psnr": 33.098069148829005
+      },
+      {
+        "dataset": "bsds500",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 37.57389495648391,
+        "pooled_psnr": 36.39620181325908
+      },
+      {
+        "dataset": "bsds500",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 38.852027794592665,
+        "pooled_psnr": 37.80840322415752
+      },
+      {
+        "dataset": "div2k",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 31.545870840922994,
+        "pooled_psnr": 29.491495300078622
+      },
+      {
+        "dataset": "div2k",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 36.34296389520203,
+        "pooled_psnr": 34.34970359990808
+      },
+      {
+        "dataset": "div2k",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 38.343408319876886,
+        "pooled_psnr": 36.14149392590319
+      },
+      {
+        "dataset": "div2k",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 38.92336401023251,
+        "pooled_psnr": 36.65354892996602
+      },
+      {
+        "dataset": "kodak24",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 30.110509806289148,
+        "pooled_psnr": 28.835254637223194
+      },
+      {
+        "dataset": "kodak24",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 35.699978391793,
+        "pooled_psnr": 34.49715129017319
+      },
+      {
+        "dataset": "kodak24",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 39.154026336805025,
+        "pooled_psnr": 38.21496799450786
+      },
+      {
+        "dataset": "kodak24",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 40.00436105699281,
+        "pooled_psnr": 39.218558681044556
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 32.25277775458715,
+        "pooled_psnr": 31.019319780470788
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 34.379600123396045,
+        "pooled_psnr": 33.30927079192652
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 34.141793815669985,
+        "pooled_psnr": 32.828011154174725
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 34.378886715755904,
+        "pooled_psnr": 33.007836698131015
+      },
+      {
+        "dataset": "urban100",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 25.431925304333344,
+        "pooled_psnr": 24.586637950089482
+      },
+      {
+        "dataset": "urban100",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 30.073832909957645,
+        "pooled_psnr": 29.301586450741432
+      },
+      {
+        "dataset": "urban100",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 33.55993185850755,
+        "pooled_psnr": 31.95360853850059
+      },
+      {
+        "dataset": "urban100",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 34.21512336975972,
+        "pooled_psnr": 32.51746830413272
+      }
+    ],
+    "cuda": [
+      {
+        "dataset": "all",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 28.91372754889762,
+        "pooled_psnr": 28.888393714948172
+      },
+      {
+        "dataset": "all",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 33.9632046826814,
+        "pooled_psnr": 33.784173890922695
+      },
+      {
+        "dataset": "all",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 36.928451287130706,
+        "pooled_psnr": 35.82994022707463
+      },
+      {
+        "dataset": "all",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 37.823137995749875,
+        "pooled_psnr": 36.40357424186917
+      },
+      {
+        "dataset": "bsds500",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 28.86732959920312,
+        "pooled_psnr": 27.68537439823014
+      },
+      {
+        "dataset": "bsds500",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 34.487794242695465,
+        "pooled_psnr": 33.28526385742866
+      },
+      {
+        "dataset": "bsds500",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 37.797466488490464,
+        "pooled_psnr": 36.6005711481974
+      },
+      {
+        "dataset": "bsds500",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 39.06155441357855,
+        "pooled_psnr": 38.00796973313196
+      },
+      {
+        "dataset": "div2k",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 31.611541879402147,
+        "pooled_psnr": 29.553411886485907
+      },
+      {
+        "dataset": "div2k",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 36.4031262721564,
+        "pooled_psnr": 34.40336361482454
+      },
+      {
+        "dataset": "div2k",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 38.394016291305,
+        "pooled_psnr": 36.174679770048414
+      },
+      {
+        "dataset": "div2k",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 38.97199421515501,
+        "pooled_psnr": 36.68462401372957
+      },
+      {
+        "dataset": "kodak24",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 29.471798362522193,
+        "pooled_psnr": 28.50179385295538
+      },
+      {
+        "dataset": "kodak24",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 34.802553703058464,
+        "pooled_psnr": 33.97302124753624
+      },
+      {
+        "dataset": "kodak24",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 39.20554509961201,
+        "pooled_psnr": 38.28863623735193
+      },
+      {
+        "dataset": "kodak24",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 39.95674765451795,
+        "pooled_psnr": 39.211559911146416
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 32.32442400599182,
+        "pooled_psnr": 31.126557882859114
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 34.46204444232853,
+        "pooled_psnr": 33.428914689860584
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 34.226762896274344,
+        "pooled_psnr": 32.94649192927455
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 34.46622636628985,
+        "pooled_psnr": 33.129297097245704
+      },
+      {
+        "dataset": "urban100",
+        "method": "bilinear",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 25.560846760235233,
+        "pooled_psnr": 24.708030628395225
+      },
+      {
+        "dataset": "urban100",
+        "method": "malvar",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 30.18286905155131,
+        "pooled_psnr": 29.386497652425113
+      },
+      {
+        "dataset": "urban100",
+        "method": "menon2007",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 33.66465727559553,
+        "pooled_psnr": 32.08496640862244
+      },
+      {
+        "dataset": "urban100",
+        "method": "softmenon",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 34.28962671588588,
+        "pooled_psnr": 32.635988638381114
+      },
+      {
+        "dataset": "all",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 28.80995183968524,
+        "pooled_psnr": 28.872241667087476
+      },
+      {
+        "dataset": "all",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 33.88311832556817,
+        "pooled_psnr": 33.77962484956018
+      },
+      {
+        "dataset": "all",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 36.78588671923214,
+        "pooled_psnr": 35.800335936099245
+      },
+      {
+        "dataset": "all",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 37.69949982617464,
+        "pooled_psnr": 36.37396145054423
+      },
+      {
+        "dataset": "bsds500",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 28.665084318408663,
+        "pooled_psnr": 27.48757889195122
+      },
+      {
+        "dataset": "bsds500",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 34.29513167880502,
+        "pooled_psnr": 33.098069148829005
+      },
+      {
+        "dataset": "bsds500",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 37.57389495648391,
+        "pooled_psnr": 36.39620181325908
+      },
+      {
+        "dataset": "bsds500",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 38.852027794592665,
+        "pooled_psnr": 37.80840322415752
+      },
+      {
+        "dataset": "div2k",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 31.545870840922994,
+        "pooled_psnr": 29.491495300078622
+      },
+      {
+        "dataset": "div2k",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 36.34296389520203,
+        "pooled_psnr": 34.34970359990808
+      },
+      {
+        "dataset": "div2k",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 38.343408319876886,
+        "pooled_psnr": 36.14149392590319
+      },
+      {
+        "dataset": "div2k",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 38.92336401023251,
+        "pooled_psnr": 36.65354892996602
+      },
+      {
+        "dataset": "kodak24",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 30.110509806289148,
+        "pooled_psnr": 28.835254637223194
+      },
+      {
+        "dataset": "kodak24",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 35.699978391793,
+        "pooled_psnr": 34.49715129017319
+      },
+      {
+        "dataset": "kodak24",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 39.154026336805025,
+        "pooled_psnr": 38.21496799450786
+      },
+      {
+        "dataset": "kodak24",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 40.00436105699281,
+        "pooled_psnr": 39.218558681044556
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 32.25277775458715,
+        "pooled_psnr": 31.019319780470788
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 34.379600123396045,
+        "pooled_psnr": 33.30927079192652
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 34.141793815669985,
+        "pooled_psnr": 32.828011154174725
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 34.378886715755904,
+        "pooled_psnr": 33.007836698131015
+      },
+      {
+        "dataset": "urban100",
+        "method": "bilinear",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 25.431925304333344,
+        "pooled_psnr": 24.586637950089482
+      },
+      {
+        "dataset": "urban100",
+        "method": "malvar",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 30.073832909957645,
+        "pooled_psnr": 29.301586450741432
+      },
+      {
+        "dataset": "urban100",
+        "method": "menon2007",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 33.55993185850755,
+        "pooled_psnr": 31.95360853850059
+      },
+      {
+        "dataset": "urban100",
+        "method": "softmenon",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 34.21512336975972,
+        "pooled_psnr": 32.51746830413272
+      }
+    ],
+    "opencv": [
+      {
+        "dataset": "all",
+        "method": "opencv_bilinear",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 28.91372754889762,
+        "pooled_psnr": 28.888393714948172
+      },
+      {
+        "dataset": "all",
+        "method": "opencv_ea",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 28.92690713097075,
+        "pooled_psnr": 28.90761967848907
+      },
+      {
+        "dataset": "all",
+        "method": "opencv_vng",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 33.50936935411882,
+        "pooled_psnr": 33.26152398676403
+      },
+      {
+        "dataset": "bsds500",
+        "method": "opencv_bilinear",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 28.86732959920312,
+        "pooled_psnr": 27.68537439823014
+      },
+      {
+        "dataset": "bsds500",
+        "method": "opencv_ea",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 28.833513523945275,
+        "pooled_psnr": 27.641492728534885
+      },
+      {
+        "dataset": "bsds500",
+        "method": "opencv_vng",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 33.957732882769754,
+        "pooled_psnr": 32.68062541627444
+      },
+      {
+        "dataset": "div2k",
+        "method": "opencv_bilinear",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 31.611541879402147,
+        "pooled_psnr": 29.553411886485907
+      },
+      {
+        "dataset": "div2k",
+        "method": "opencv_ea",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 31.627034132229838,
+        "pooled_psnr": 29.56563415812926
+      },
+      {
+        "dataset": "div2k",
+        "method": "opencv_vng",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 36.02443951887764,
+        "pooled_psnr": 33.93325761059856
+      },
+      {
+        "dataset": "kodak24",
+        "method": "opencv_bilinear",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 29.471798362522193,
+        "pooled_psnr": 28.50179385295538
+      },
+      {
+        "dataset": "kodak24",
+        "method": "opencv_ea",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 29.51140426080863,
+        "pooled_psnr": 28.535988612069065
+      },
+      {
+        "dataset": "kodak24",
+        "method": "opencv_vng",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 33.492019340917146,
+        "pooled_psnr": 32.68341079238191
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "opencv_bilinear",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 32.32442400599182,
+        "pooled_psnr": 31.126557882859114
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "opencv_ea",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 32.34936374459833,
+        "pooled_psnr": 31.14983450981153
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "opencv_vng",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 34.863889583024665,
+        "pooled_psnr": 33.87930731384307
+      },
+      {
+        "dataset": "urban100",
+        "method": "opencv_bilinear",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 25.560846760235233,
+        "pooled_psnr": 24.708030628395225
+      },
+      {
+        "dataset": "urban100",
+        "method": "opencv_ea",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 25.65724584214855,
+        "pooled_psnr": 24.80950259953795
+      },
+      {
+        "dataset": "urban100",
+        "method": "opencv_vng",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 29.85792249402344,
+        "pooled_psnr": 28.740815564228907
+      },
+      {
+        "dataset": "all",
+        "method": "opencv_bilinear",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 28.80995183968524,
+        "pooled_psnr": 28.872241667087476
+      },
+      {
+        "dataset": "all",
+        "method": "opencv_ea",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 28.82596585984852,
+        "pooled_psnr": 28.891634500117746
+      },
+      {
+        "dataset": "all",
+        "method": "opencv_vng",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 33.487470290874754,
+        "pooled_psnr": 33.274530839919166
+      },
+      {
+        "dataset": "bsds500",
+        "method": "opencv_bilinear",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 28.665084318408663,
+        "pooled_psnr": 27.48757889195122
+      },
+      {
+        "dataset": "bsds500",
+        "method": "opencv_ea",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 28.639260108333527,
+        "pooled_psnr": 27.45287395290721
+      },
+      {
+        "dataset": "bsds500",
+        "method": "opencv_vng",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 33.80357629319669,
+        "pooled_psnr": 32.51636677834634
+      },
+      {
+        "dataset": "div2k",
+        "method": "opencv_bilinear",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 31.545870840922994,
+        "pooled_psnr": 29.491495300078622
+      },
+      {
+        "dataset": "div2k",
+        "method": "opencv_ea",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 31.562364972601316,
+        "pooled_psnr": 29.50482065557051
+      },
+      {
+        "dataset": "div2k",
+        "method": "opencv_vng",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 35.96510453172325,
+        "pooled_psnr": 33.874527976320806
+      },
+      {
+        "dataset": "kodak24",
+        "method": "opencv_bilinear",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 30.110509806289148,
+        "pooled_psnr": 28.835254637223194
+      },
+      {
+        "dataset": "kodak24",
+        "method": "opencv_ea",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 30.121635779177694,
+        "pooled_psnr": 28.84362480262459
+      },
+      {
+        "dataset": "kodak24",
+        "method": "opencv_vng",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 35.06004981839485,
+        "pooled_psnr": 33.62370454234917
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "opencv_bilinear",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 32.25277775458715,
+        "pooled_psnr": 31.019319780470788
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "opencv_ea",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 32.27908302098358,
+        "pooled_psnr": 31.04530815479547
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "opencv_vng",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 34.79059740797891,
+        "pooled_psnr": 33.77216444760958
+      },
+      {
+        "dataset": "urban100",
+        "method": "opencv_bilinear",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 25.431925304333344,
+        "pooled_psnr": 24.586637950089482
+      },
+      {
+        "dataset": "urban100",
+        "method": "opencv_ea",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 25.530456380482377,
+        "pooled_psnr": 24.684316209505827
+      },
+      {
+        "dataset": "urban100",
+        "method": "opencv_vng",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 29.765642077698804,
+        "pooled_psnr": 28.673073521908332
+      }
+    ],
+    "npp": [
+      {
+        "dataset": "all",
+        "method": "npp_cfa",
+        "inset": 0,
+        "pairs": 884,
+        "mean_psnr": 29.102946280228878,
+        "pooled_psnr": 29.083569393771462
+      },
+      {
+        "dataset": "bsds500",
+        "method": "npp_cfa",
+        "inset": 0,
+        "pairs": 400,
+        "mean_psnr": 29.04070767684449,
+        "pooled_psnr": 27.84774269535406
+      },
+      {
+        "dataset": "div2k",
+        "method": "npp_cfa",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 31.802457192850735,
+        "pooled_psnr": 29.749139266160114
+      },
+      {
+        "dataset": "kodak24",
+        "method": "npp_cfa",
+        "inset": 0,
+        "pairs": 48,
+        "mean_psnr": 29.72140054969364,
+        "pooled_psnr": 28.73855201434401
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "npp_cfa",
+        "inset": 0,
+        "pairs": 36,
+        "mean_psnr": 32.494707854423346,
+        "pooled_psnr": 31.298755115905035
+      },
+      {
+        "dataset": "urban100",
+        "method": "npp_cfa",
+        "inset": 0,
+        "pairs": 200,
+        "mean_psnr": 25.768966466349244,
+        "pooled_psnr": 24.919856692935397
+      },
+      {
+        "dataset": "all",
+        "method": "npp_cfa",
+        "inset": 16,
+        "pairs": 884,
+        "mean_psnr": 28.996258647196328,
+        "pooled_psnr": 29.06679026356157
+      },
+      {
+        "dataset": "bsds500",
+        "method": "npp_cfa",
+        "inset": 16,
+        "pairs": 400,
+        "mean_psnr": 28.836958960498453,
+        "pooled_psnr": 27.649857748847314
+      },
+      {
+        "dataset": "div2k",
+        "method": "npp_cfa",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 31.737376348026,
+        "pooled_psnr": 29.687864277042863
+      },
+      {
+        "dataset": "kodak24",
+        "method": "npp_cfa",
+        "inset": 16,
+        "pairs": 48,
+        "mean_psnr": 30.317654743541933,
+        "pooled_psnr": 29.045028578773465
+      },
+      {
+        "dataset": "mcmaster",
+        "method": "npp_cfa",
+        "inset": 16,
+        "pairs": 36,
+        "mean_psnr": 32.42444615613445,
+        "pooled_psnr": 31.19269033568073
+      },
+      {
+        "dataset": "urban100",
+        "method": "npp_cfa",
+        "inset": 16,
+        "pairs": 200,
+        "mean_psnr": 25.639531505030586,
+        "pooled_psnr": 24.79573249761417
+      }
+    ]
+  },
+  "softmenon_vs_paper": [
+    {
+      "inset": 0,
+      "dataset": "all",
+      "images": 442,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.8946867086191739,
+      "region_mean_gain_db": {
+        "full": 0.8946867086191739,
+        "interior8": 0.9081107827021955,
+        "border8": 0.7576046390030629
+      },
+      "wins": 411,
+      "ties": 0,
+      "losses": 31,
+      "bootstrap95_mean_gain_db": [
+        0.8410602892967638,
+        0.9496198943102383
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
+          "gain_db": -1.6899231582095204
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.6752771703386315
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
+          "gain_db": -0.668959363885925
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
+          "gain_db": -0.6516053729380342
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
+          "gain_db": -0.5323028385520701
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.2716553092431404
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
+          "gain_db": 2.7330581582121383
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/92014.jpg",
+          "gain_db": 2.519640723021844
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
+          "gain_db": 2.4895471563053775
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/346016.jpg",
+          "gain_db": 2.3329562182645613
+        }
+      ]
+    },
+    {
+      "inset": 0,
+      "dataset": "bsds500",
+      "images": 200,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 1.264087925088084,
+      "region_mean_gain_db": {
+        "full": 1.264087925088084,
+        "interior8": 1.2773524268071212,
+        "border8": 1.0529936013848962
+      },
+      "wins": 198,
+      "ties": 0,
+      "losses": 2,
+      "bootstrap95_mean_gain_db": [
+        1.191889036605399,
+        1.3355226098085053
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/bsds500/test/43051.jpg",
+          "gain_db": -0.31425701658913496
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/388006.jpg",
+          "gain_db": -0.104168138435206
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/10081.jpg",
+          "gain_db": 0.0375604395439737
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/81066.jpg",
+          "gain_db": 0.18318926759388532
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/104055.jpg",
+          "gain_db": 0.24266846531896036
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/bsds500/test/92014.jpg",
+          "gain_db": 2.519640723021844
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/346016.jpg",
+          "gain_db": 2.3329562182645613
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/101027.jpg",
+          "gain_db": 2.3158900778402547
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/267036.jpg",
+          "gain_db": 2.2783443424422813
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/207049.jpg",
+          "gain_db": 2.18729841349122
+        }
+      ]
+    },
+    {
+      "inset": 0,
+      "dataset": "div2k",
+      "images": 100,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.5779779238500125,
+      "region_mean_gain_db": {
+        "full": 0.5779779238500125,
+        "interior8": 0.5778973660426471,
+        "border8": 0.5570108281249774
+      },
+      "wins": 89,
+      "ties": 0,
+      "losses": 11,
+      "bootstrap95_mean_gain_db": [
+        0.4797072220224418,
+        0.6804930851581777
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/div2k/validation/0885.png",
+          "gain_db": -0.40741577531214546
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0892.png",
+          "gain_db": -0.31056973516908215
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0818.png",
+          "gain_db": -0.2476042848543898
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0833.png",
+          "gain_db": -0.21341364249228434
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0806.png",
+          "gain_db": -0.20274787422697216
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/div2k/validation/0829.png",
+          "gain_db": 2.1875333326265753
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0857.png",
+          "gain_db": 2.1028462393949496
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0855.png",
+          "gain_db": 1.7573385684613214
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0862.png",
+          "gain_db": 1.7053045151598312
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0881.png",
+          "gain_db": 1.4314088093513426
+        }
+      ]
+    },
+    {
+      "inset": 0,
+      "dataset": "kodak24",
+      "images": 24,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.7512025549059375,
+      "region_mean_gain_db": {
+        "full": 0.7512025549059375,
+        "interior8": 0.8468454944958063,
+        "border8": -0.11137209962919226
+      },
+      "wins": 22,
+      "ties": 0,
+      "losses": 2,
+      "bootstrap95_mean_gain_db": [
+        0.5646502822328066,
+        0.9462866528167947
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/kodak24/kodim23.png",
+          "gain_db": -0.30744835630730805
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim02.png",
+          "gain_db": -0.10036078672180793
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim07.png",
+          "gain_db": 0.3567602612780796
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim12.png",
+          "gain_db": 0.38119083995620784
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim15.png",
+          "gain_db": 0.4840217319511382
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/kodak24/kodim13.png",
+          "gain_db": 1.8556072413811897
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim01.png",
+          "gain_db": 1.663756359817107
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim18.png",
+          "gain_db": 1.3717290165812415
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim21.png",
+          "gain_db": 1.226517424803017
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim08.png",
+          "gain_db": 1.1133622067238171
+        }
+      ]
+    },
+    {
+      "inset": 0,
+      "dataset": "mcmaster",
+      "images": 18,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.23946347001550816,
+      "region_mean_gain_db": {
+        "full": 0.23946347001550816,
+        "interior8": 0.2367188308115805,
+        "border8": 0.28058493447379274
+      },
+      "wins": 15,
+      "ties": 0,
+      "losses": 3,
+      "bootstrap95_mean_gain_db": [
+        0.12139957145417989,
+        0.3911604084376447
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/mcmaster/6.tif",
+          "gain_db": -0.20758217802692513
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/13.tif",
+          "gain_db": -0.10072881368862241
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/2.tif",
+          "gain_db": -0.02748705184607303
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/1.tif",
+          "gain_db": 0.040846199614117396
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/5.tif",
+          "gain_db": 0.09371779047964779
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/mcmaster/7.tif",
+          "gain_db": 1.21581995189743
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/3.tif",
+          "gain_db": 0.4119333936454481
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/9.tif",
+          "gain_db": 0.3906690525500629
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/11.tif",
+          "gain_db": 0.31781635374980866
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/8.tif",
+          "gain_db": 0.31649079301949357
+        }
+      ]
+    },
+    {
+      "inset": 0,
+      "dataset": "urban100",
+      "images": 100,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.6249694402903516,
+      "region_mean_gain_db": {
+        "full": 0.6249694402903516,
+        "interior8": 0.6353951316617362,
+        "border8": 0.6618384892044914
+      },
+      "wins": 87,
+      "ties": 0,
+      "losses": 13,
+      "bootstrap95_mean_gain_db": [
+        0.4830634166418392,
+        0.7719675299183835
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
+          "gain_db": -1.6899231582095204
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.6752771703386315
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
+          "gain_db": -0.668959363885925
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
+          "gain_db": -0.6516053729380342
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
+          "gain_db": -0.5323028385520701
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.2716553092431404
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
+          "gain_db": 2.7330581582121383
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
+          "gain_db": 2.4895471563053775
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_048_SRF_2_HR.png",
+          "gain_db": 2.29057185769957
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_072_SRF_2_HR.png",
+          "gain_db": 2.238671512019941
+        }
+      ]
+    },
+    {
+      "inset": 16,
+      "dataset": "all",
+      "images": 442,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.9136131069425022,
+      "region_mean_gain_db": {
+        "full": 0.9136131069425022,
+        "interior8": 0.9132956698239433,
+        "border8": 0.9033394980991193
+      },
+      "wins": 413,
+      "ties": 0,
+      "losses": 29,
+      "bootstrap95_mean_gain_db": [
+        0.8605437816054649,
+        0.9677762478246639
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
+          "gain_db": -1.7298784538844458
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.7080430038732501
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
+          "gain_db": -0.6902183694929658
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
+          "gain_db": -0.6144789331458682
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
+          "gain_db": -0.5460681103711131
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.3563970889842576
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
+          "gain_db": 2.915057228058906
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
+          "gain_db": 2.5042502908757527
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/92014.jpg",
+          "gain_db": 2.432822216175186
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_048_SRF_2_HR.png",
+          "gain_db": 2.3863408568762647
+        }
+      ]
+    },
+    {
+      "inset": 16,
+      "dataset": "bsds500",
+      "images": 200,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 1.2781328381087573,
+      "region_mean_gain_db": {
+        "full": 1.2781328381087573,
+        "interior8": 1.2805605002589078,
+        "border8": 1.2008838617796034
+      },
+      "wins": 198,
+      "ties": 0,
+      "losses": 2,
+      "bootstrap95_mean_gain_db": [
+        1.2063400925528405,
+        1.3490886858909839
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/bsds500/test/43051.jpg",
+          "gain_db": -0.19706733359273798
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/388006.jpg",
+          "gain_db": -0.16039584916120475
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/10081.jpg",
+          "gain_db": 0.05544939566345519
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/81066.jpg",
+          "gain_db": 0.1559091036231095
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/226043.jpg",
+          "gain_db": 0.27489560121509626
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/bsds500/test/92014.jpg",
+          "gain_db": 2.432822216175186
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/346016.jpg",
+          "gain_db": 2.3474430025057664
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/101027.jpg",
+          "gain_db": 2.337082300211197
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/267036.jpg",
+          "gain_db": 2.311079628029187
+        },
+        {
+          "path": "datasets/reference/images/bsds500/test/87015.jpg",
+          "gain_db": 2.1814871437521184
+        }
+      ]
+    },
+    {
+      "inset": 16,
+      "dataset": "div2k",
+      "images": 100,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.5799556903556239,
+      "region_mean_gain_db": {
+        "full": 0.5799556903556239,
+        "interior8": 0.5799751983448642,
+        "border8": 0.5611861179924069
+      },
+      "wins": 88,
+      "ties": 0,
+      "losses": 12,
+      "bootstrap95_mean_gain_db": [
+        0.4815358817435219,
+        0.6827139877808297
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/div2k/validation/0885.png",
+          "gain_db": -0.4056272650749868
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0892.png",
+          "gain_db": -0.3143039944159973
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0818.png",
+          "gain_db": -0.2492730107066663
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0833.png",
+          "gain_db": -0.2274829866966428
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0806.png",
+          "gain_db": -0.20687658926532038
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/div2k/validation/0829.png",
+          "gain_db": 2.1810559813870576
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0857.png",
+          "gain_db": 2.0949118645895055
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0855.png",
+          "gain_db": 1.749756102281843
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0862.png",
+          "gain_db": 1.699613399581125
+        },
+        {
+          "path": "datasets/reference/images/div2k/validation/0881.png",
+          "gain_db": 1.431611618158584
+        }
+      ]
+    },
+    {
+      "inset": 16,
+      "dataset": "kodak24",
+      "images": 24,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.8503347201877932,
+      "region_mean_gain_db": {
+        "full": 0.8503347201877932,
+        "interior8": 0.8477847203786588,
+        "border8": 0.9355642458657485
+      },
+      "wins": 24,
+      "ties": 0,
+      "losses": 0,
+      "bootstrap95_mean_gain_db": [
+        0.700676253837712,
+        1.0166386453585663
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/kodak24/kodim02.png",
+          "gain_db": 0.15820356774686317
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim12.png",
+          "gain_db": 0.4772776655588693
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim23.png",
+          "gain_db": 0.48405201365432404
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim07.png",
+          "gain_db": 0.48777803374139594
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim03.png",
+          "gain_db": 0.570183704695733
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/kodak24/kodim13.png",
+          "gain_db": 1.8983690137311378
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim01.png",
+          "gain_db": 1.7178232545703125
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim18.png",
+          "gain_db": 1.377797770082946
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim21.png",
+          "gain_db": 1.24528287804889
+        },
+        {
+          "path": "datasets/reference/images/kodak24/kodim08.png",
+          "gain_db": 1.1294953278262128
+        }
+      ]
+    },
+    {
+      "inset": 16,
+      "dataset": "mcmaster",
+      "images": 18,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.23709290008592523,
+      "region_mean_gain_db": {
+        "full": 0.23709290008592523,
+        "interior8": 0.23320629048599853,
+        "border8": 0.29391541038052843
+      },
+      "wins": 15,
+      "ties": 0,
+      "losses": 3,
+      "bootstrap95_mean_gain_db": [
+        0.11481776406468241,
+        0.3876588941402013
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/mcmaster/6.tif",
+          "gain_db": -0.23238180832392175
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/13.tif",
+          "gain_db": -0.130020166543364
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/2.tif",
+          "gain_db": -0.01825681173222904
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/1.tif",
+          "gain_db": 0.030220240199581028
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/5.tif",
+          "gain_db": 0.10036339495967539
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/mcmaster/7.tif",
+          "gain_db": 1.1896868919206476
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/9.tif",
+          "gain_db": 0.42499067376054356
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/3.tif",
+          "gain_db": 0.4179295027143297
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/12.tif",
+          "gain_db": 0.3384726467851742
+        },
+        {
+          "path": "datasets/reference/images/mcmaster/11.tif",
+          "gain_db": 0.33185883472500066
+        }
+      ]
+    },
+    {
+      "inset": 16,
+      "dataset": "urban100",
+      "images": 100,
+      "baseline": "menon2007",
+      "method": "softmenon",
+      "mean_gain_db": 0.6551915112521843,
+      "region_mean_gain_db": {
+        "full": 0.6551915112521843,
+        "interior8": 0.6502251965807919,
+        "border8": 0.7523665471702188
+      },
+      "wins": 88,
+      "ties": 0,
+      "losses": 12,
+      "bootstrap95_mean_gain_db": [
+        0.5112055098531042,
+        0.8023888583256519
+      ],
+      "worst5": [
+        {
+          "path": "datasets/reference/images/urban100/img_055_SRF_2_HR.png",
+          "gain_db": -1.7298784538844458
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_080_SRF_2_HR.png",
+          "gain_db": -0.7080430038732501
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_065_SRF_2_HR.png",
+          "gain_db": -0.6902183694929658
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_009_SRF_2_HR.png",
+          "gain_db": -0.6144789331458682
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_090_SRF_2_HR.png",
+          "gain_db": -0.5460681103711131
+        }
+      ],
+      "best5": [
+        {
+          "path": "datasets/reference/images/urban100/img_092_SRF_2_HR.png",
+          "gain_db": 3.3563970889842576
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_045_SRF_2_HR.png",
+          "gain_db": 2.915057228058906
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_042_SRF_2_HR.png",
+          "gain_db": 2.5042502908757527
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_048_SRF_2_HR.png",
+          "gain_db": 2.3863408568762647
+        },
+        {
+          "path": "datasets/reference/images/urban100/img_072_SRF_2_HR.png",
+          "gain_db": 2.198952398676578
+        }
+      ]
+    }
+  ],
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20261010,
+    "unit": "source image; phases kept together; stratified by dataset",
+    "scope": "Pointwise uncertainty on this evaluation corpus; not a held-out generalization estimate"
+  },
+  "timing": [
+    {
+      "backend": "cpu",
+      "method": "bilinear",
+      "mean_phase_median_ms": 0.28283445,
+      "fps": 3535.6371898826324
+    },
+    {
+      "backend": "cpu",
+      "method": "malvar",
+      "mean_phase_median_ms": 0.6424553,
+      "fps": 1556.5285242412974
+    },
+    {
+      "backend": "cpu",
+      "method": "menon2007",
+      "mean_phase_median_ms": 1.1925968999999998,
+      "fps": 838.5062882521329
+    },
+    {
+      "backend": "cpu",
+      "method": "softmenon",
+      "mean_phase_median_ms": 0.4772391,
+      "fps": 2095.3857301298235
+    },
+    {
+      "backend": "cuda",
+      "method": "bilinear",
+      "mean_phase_median_ms": 0.347109,
+      "fps": 2880.9394167250057
+    },
+    {
+      "backend": "cuda",
+      "method": "malvar",
+      "mean_phase_median_ms": 0.3471757,
+      "fps": 2880.3859256278597
+    },
+    {
+      "backend": "cuda",
+      "method": "menon2007",
+      "mean_phase_median_ms": 0.5368821500000001,
+      "fps": 1862.6061604022407
+    },
+    {
+      "backend": "cuda",
+      "method": "softmenon",
+      "mean_phase_median_ms": 0.37137204999999995,
+      "fps": 2692.7174514075577
+    },
+    {
+      "backend": "opencv",
+      "method": "opencv_bilinear",
+      "mean_phase_median_ms": 0.30303884999999997,
+      "fps": 3299.906926125149
+    },
+    {
+      "backend": "opencv",
+      "method": "opencv_ea",
+      "mean_phase_median_ms": 0.31891464999999997,
+      "fps": 3135.63519267616
+    },
+    {
+      "backend": "opencv",
+      "method": "opencv_vng",
+      "mean_phase_median_ms": 6.7322035499999995,
+      "fps": 148.5397749151539
+    },
+    {
+      "backend": "npp",
+      "method": "npp_cfa",
+      "mean_phase_median_ms": 0.40251175,
+      "fps": 2484.399523740611
+    }
+  ],
+  "cpu_cuda_mismatches": {
+    "bilinear": 0,
+    "malvar": 0,
+    "menon2007": 0,
+    "softmenon": 0
+  },
+  "artifact_sha256": {
+    "quality-cpu.json.gz": "b00527ab9a114ed68f314aabd796640c2f3ef4a7cb3f2843fa874c5756330f58",
+    "timing-cpu.json": "c8d5ea4670e6ce3c310bac902db653ceec9acfa0fdb2bb7d90883dc67b267fc6",
+    "quality-cuda.json.gz": "69286c16027b533e2322801782bfb8c005db3473de5ce2bd4715191fbb5e2388",
+    "timing-cuda.json": "10b99218fb41f20a6e7a82aed83ee6eda26752b76244c737103ebfbf4021c52a",
+    "quality-opencv.json.gz": "3713b5373dfed2cb0c889df527b43430d1cfed742c06ee2cef8e07e30e338c74",
+    "timing-opencv.json": "ae60fc83c78cffaf46572c857c9f0ec97474abdb9b7b56525bcbecde539acb23",
+    "quality-npp.json.gz": "993d2a4cdb113945ffebe2ec9bfa7ffe22eaed4bcf51e3f55c91b1748f72bc90",
+    "timing-npp.json": "82cdda0c90f458406706fd4d95717664e706e7aefacdfdff12f94bad91ba8252",
+    "examples.json": "4edbeaa1ad623cf6e7fbe4b3478c90fcf55c5ea58a782c9d7bdf5430e55ddd95"
+  },
+  "generator_sha256": "55f4fdc45a1cf596fb5a8efac40f3ae078e1ee9f2cfe22c3e1b0feb3f354f114"
+}

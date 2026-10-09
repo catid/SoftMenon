@@ -1,6 +1,6 @@
-// Validate the fused median refinement against a plain-sort interpretation.
-// Expected values come from immutable completed precleanup RGB, not from the
-// optimized median network or its SIMD implementations.
+// Independent scalar interpretation of the complete SoftMenon pipeline.
+// The oracle uses coordinate-based RAW reflection, signed integer division,
+// and plain sorting; it does not call the production interpolation stages.
 #include "cpu_debayer.hpp"
 #include "chroma_median.hpp"
 
@@ -14,19 +14,17 @@
 #include <string>
 #include <vector>
 
-struct DebayerBenchmarkAccess {
-    static int precleanup(Debayer& backend,const raw_image_t* raw,bgr_image_t* bgr) {
-        return backend.ProcessImpl(raw,bgr,2);
-    }
-};
-
 namespace {
 void require(bool okay,const std::string& label) {if(!okay)throw std::runtime_error(label);}
 int clipped(int value) {return std::max(0,std::min(255,value));}
 int reflected(int coordinate,int length) {
-    if(coordinate<0)return 1;
-    if(coordinate>=length)return length-2;
+    while(coordinate<0 || coordinate>=length)
+        coordinate=coordinate<0 ? -coordinate : 2*(length-1)-coordinate;
     return coordinate;
+}
+int64_t rounded(int64_t numerator,int64_t denominator) {
+    numerator+=denominator/2;
+    return numerator>=0 ? numerator/denominator : -((-numerator+denominator-1)/denominator);
 }
 int measured(int x,int y,bool rggb) {
     if((x^y)&1)return 1;
@@ -50,6 +48,65 @@ struct Buffer {
             require(data()[static_cast<size_t>(y)*pitch+x]==173,"row padding overwritten");
     }
 };
+
+void completed_reference(const Buffer& raw,Buffer& rgb,bool rggb) {
+    const auto sample=[&](int x,int y) {
+        return raw.at(reflected(x,raw.width),reflected(y,raw.height));
+    };
+    const auto candidate=[&](int x,int y,int dx,int dy) {
+        return rounded(sample(x-dx,y-dy)+sample(x+dx,y+dy),2)
+            +rounded(2*sample(x,y)-sample(x-2*dx,y-2*dy)-sample(x+2*dx,y+2*dy),4);
+    };
+    const auto difference=[&](int x,int y,int dx,int dy) {
+        return sample(x,y)-candidate(x,y,dx,dy);
+    };
+    const auto variation=[&](int x,int y,int dx,int dy) {
+        return std::abs(difference(x,y,dx,dy)-difference(x-2*dx,y-2*dy,dx,dy))
+            +std::abs(difference(x,y,dx,dy)-difference(x+2*dx,y+2*dy,dx,dy));
+    };
+    const auto score=[&](int x,int y,int dx,int dy) {
+        const int bx=dy,by=dx;
+        return 3*variation(x,y,dx,dy)
+            +variation(x-2*bx,y-2*by,dx,dy)+variation(x+2*bx,y+2*by,dx,dy)
+            +std::abs(difference(x-dx-bx,y-dy-by,dx,dy)-difference(x+dx-bx,y+dy-by,dx,dy))
+            +std::abs(difference(x-dx+bx,y-dy+by,dx,dy)-difference(x+dx+bx,y+dy+by,dx,dy));
+    };
+    // Evaluate the stencil at virtual border coordinates. Reflecting a
+    // completed green image instead would change the edge arithmetic.
+    Buffer greens(raw.width+2,raw.height+2,1,0);
+    for(int y=-1;y<=raw.height;++y)for(int x=-1;x<=raw.width;++x) {
+        int green=sample(x,y);
+        if(((x^y)&1)==0) {
+            const int64_t sh=score(x,y,1,0)+1,sv=score(x,y,0,1)+1;
+            green=clipped(static_cast<int>(rounded(
+                sv*sv*candidate(x,y,1,0)+sh*sh*candidate(x,y,0,1),sv*sv+sh*sh)));
+        }
+        greens.at(x+1,y+1)=static_cast<uint8_t>(green);
+    }
+    const auto green=[&](int x,int y){return greens.at(x+1,y+1);};
+    const auto color_difference=[&](int x,int y){return sample(x,y)-green(x,y);};
+    for(int y=0;y<raw.height;++y)for(int x=0;x<raw.width;++x) {
+        rgb.at(x,y,1)=static_cast<uint8_t>(green(x,y));
+        const int observed=measured(x,y,rggb);
+        for(int channel:{0,2}) {
+            if(observed==channel){rgb.at(x,y,channel)=static_cast<uint8_t>(sample(x,y));continue;}
+            int64_t d;
+            if(observed==1) {
+                const bool horizontal=measured(x-1,y,rggb)==channel;
+                const int dx=horizontal?1:0,dy=horizontal?0:1;
+                d=rounded(color_difference(x-dx,y-dy)+color_difference(x+dx,y+dy),2);
+            } else {
+                const int ul=color_difference(x-1,y-1),ur=color_difference(x+1,y-1);
+                const int dl=color_difference(x-1,y+1),dr=color_difference(x+1,y+1);
+                const int first_variation=std::abs(ul-dr),second_variation=std::abs(ur-dl);
+                const int64_t first=rounded(ul+dr,2),second=rounded(ur+dl,2);
+                d=std::abs(first_variation-second_variation)<=26 ? rounded(first+second,2)
+                    : first_variation<=second_variation ? first : second;
+            }
+            rgb.at(x,y,channel)=static_cast<uint8_t>(clipped(static_cast<int>(green(x,y)+d)));
+        }
+    }
+}
 
 std::vector<uint8_t> reference(const Buffer& source,bool rggb,size_t& underflow,size_t& overflow) {
     std::vector<uint8_t> result(static_cast<size_t>(source.width)*source.height*3);
@@ -115,8 +172,8 @@ int main() {
             }
             const auto raw_before=raw.bytes;
             raw_image_t input{w,h,raw.data(),raw.pitch,SARONIC_DEBAYER_SOFTMENON,rggb?SARONIC_DEBAYER_RGGB:SARONIC_DEBAYER_BGGR};
-            bgr_image_t destination{w,h,pre.data(),pre.pitch};
-            require(DebayerBenchmarkAccess::precleanup(*backends[0],&input,&destination)==0,"precleanup failed");
+            bgr_image_t destination;
+            completed_reference(raw,pre,rggb);
             pre.guards();const auto expected=reference(pre,rggb,underflow,overflow);
             for(auto& backend:backends) {
                 out.reset();destination={w,h,out.data(),out.pitch};
@@ -146,7 +203,7 @@ int main() {
             }
         }
         require(underflow>0&&overflow>0,"green clipping cases were not exercised");
-        std::cout<<"SoftMenon sort reference: "<<public_count<<" public outputs, "<<direct_count
+        std::cout<<"SoftMenon independent reference: "<<public_count<<" public outputs, "<<direct_count
                  <<" direct sliced outputs, "<<underflow<<" green underflows, "<<overflow<<" green overflows\n";
         return 0;
     } catch(const std::exception& error) {std::cerr<<"SoftMenon reference failure: "<<error.what()<<'\n';return 1;}

@@ -35,8 +35,10 @@ This CPU implementation accepts 8-bit RGGB and BGGR images with width and height
 at least two, including odd dimensions. Choose `SARONIC_DEBAYER_BILINEAR`,
 `SARONIC_DEBAYER_MALVAR2004`, `SARONIC_DEBAYER_MENON2007`, or
 `SARONIC_DEBAYER_SOFTMENON`. Menon implements DDFAPD with full paper refinement;
-SoftMenon uses soft green decisions and a median of color differences to refine
-missing green and red/blue values while preserving every measured CFA sample.
+SoftMenon blends horizontal and vertical Hamilton–Adams green candidates with
+squared inverse scores from directional color-difference variation. It then
+reconstructs red/blue and applies immutable 3×3 medians of color differences,
+refining missing values while preserving every measured CFA sample.
 Output channels are BGR. Row
 pitches are byte counts; zero means tightly packed, otherwise each pitch must
 cover its complete image row.
@@ -51,8 +53,12 @@ eight workers; `Debayer debayer(4);` explicitly selects four, and `WorkerCount()
 reports the configured count, including the calling thread. A setting of one
 uses no helper threads.
 Scratch buffers are retained across frames and resized when dimensions change.
-Bilinear and Malvar write directly to the caller's output; SoftMenon fuses its
-final cleanup and output channel order. Full paper Menon caches its gradients
+Bilinear and Malvar write directly to the caller's output. SoftMenon completes
+64-row strips in private buffers and fuses final refinement with output channel
+order; its AVX512 green path caches directional differences in strips of up to
+128 rows. If that cache allocation fails, interpolation uses an allocation-free
+equivalent path. A tile or task allocation failure returns `-3` after all queued
+work completes; output may be partially written on failure. Full paper Menon caches its gradients
 and runs all refinement stages in private per-worker tiles, preserving the
 reference output exactly. AVX512 and AVX2 kernels are selected at runtime on
 supported x86 CPUs, with a portable scalar fallback. Paper Menon requires
@@ -80,11 +86,17 @@ algorithm switches, and scalar/AVX2/AVX512 paths available on the host. Direct
 kernel checks also process arbitrary row slices in reverse order and verify
 that rows outside each slice remain untouched.
 
-`cpu_softmenon_reference` checks the fused green/color refinement against an
-independent `std::sort` median interpretation. It covers measured-sample
-preservation, clipping before color reconstruction, arbitrary RGB cleanup
-inputs, both Bayer phases, worker counts, strided buffers, and direct scalar,
-AVX2 and AVX512 cleanup paths.
+`cpu_softmenon_reference` compares the complete pipeline against an independent
+scalar oracle using coordinate-based RAW reflection, signed integer rounding,
+and `std::sort` medians. It covers measured-sample preservation, clipping before
+color reconstruction, tiny and odd dimensions, strip boundaries, arbitrary RGB
+refinement inputs, both Bayer phases, worker counts, strided buffers, and direct
+scalar, AVX2 and AVX512 median paths.
+
+`cpu_softmenon_allocation` injects real allocator failures in a separate test
+executable. It checks helper-thread tile failure reporting, queued-task draining,
+cache fallback when AVX512 is available, input/guard preservation, and exact
+recovery on the next call. The library contains no fault-injection controls.
 
 Run the core tests with AddressSanitizer and UndefinedBehaviorSanitizer:
 

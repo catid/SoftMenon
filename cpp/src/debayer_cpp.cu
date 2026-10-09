@@ -3,9 +3,6 @@
 
 #include <limits>
 
-cudaError_t debayer_menon_diagnostic(cudaStream_t, int32_t, int32_t,
-    size_t, size_t, uint8_t*, uint8_t*, bool, bool);
-
 void Debayer::Free()
 {
     // Complete any queued transfers before releasing their buffers.
@@ -54,11 +51,6 @@ bool Debayer::Allocate(int width, int height)
 
 int32_t Debayer::Process(const raw_image_t* input, const bgr_image_t* output)
 {
-    return ProcessImpl(input, output, 0);
-}
-
-int32_t Debayer::ProcessImpl(const raw_image_t* input, const bgr_image_t* output, int diagnostic)
-{
     if (!input || !output || !input->raw_data || !output->bgr_data) return -8;
     if (input->width != output->width || input->height != output->height) return -1;
     if (input->width < 2 || input->height < 2 ||
@@ -76,7 +68,7 @@ int32_t Debayer::ProcessImpl(const raw_image_t* input, const bgr_image_t* output
     if (input->format != SARONIC_DEBAYER_RGGB && input->format != SARONIC_DEBAYER_BGGR) return -7;
     if (!Allocate(input->width, input->height)) return -2;
 
-    const size_t required = diagnostic ? 0 : input->algorithm == SARONIC_DEBAYER_MENON2007 ?
+    const size_t required = input->algorithm == SARONIC_DEBAYER_MENON2007 ?
         debayer_menon2007_workspace_size(input->width, input->height) :
         input->algorithm == SARONIC_DEBAYER_SOFTMENON ?
         debayer_softmenon_workspace_size(input->width, input->height) : 0;
@@ -104,14 +96,11 @@ int32_t Debayer::ProcessImpl(const raw_image_t* input, const bgr_image_t* output
         cudaMemcpyHostToDevice, stream);
     if (result != cudaSuccess) return fail(-3);
 
-    if (diagnostic || input->algorithm != SARONIC_DEBAYER_MENON2007) {
+    if (input->algorithm != SARONIC_DEBAYER_MENON2007) {
         result = debayer_mirror_image(stream, input->width, input->height, raw_cuda_pitch, raw_cuda_data);
         if (result != cudaSuccess) return fail(-9);
     }
-    if (diagnostic) {
-        result = debayer_menon_diagnostic(stream, input->width, input->height, raw_cuda_pitch,
-            bgr_cuda_pitch, raw_cuda_data, bgr_cuda_data, input->format == SARONIC_DEBAYER_RGGB, diagnostic == 2);
-    } else if (input->algorithm == SARONIC_DEBAYER_BILINEAR) {
+    if (input->algorithm == SARONIC_DEBAYER_BILINEAR) {
         if (input->format == SARONIC_DEBAYER_RGGB)
             result = debayer_rggb2bgr_bilinear(stream, input->width, input->height, raw_cuda_pitch, bgr_cuda_pitch, raw_cuda_data, bgr_cuda_data);
         else

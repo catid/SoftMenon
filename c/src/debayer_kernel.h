@@ -46,29 +46,29 @@ extern __global__ void rggb_bilinear(
     int width,
     int height);
 
-extern __global__ void rggb_menon2007_g(
+extern __global__ void rggb_softmenon_g(
     const uint8_t* raw,
     ptrdiff_t raw_pitch,
-    uint8_t* bgr,
-    ptrdiff_t bgr_pitch,
-    int width,
-    int height, bool soft = false);
-
-extern __global__ void rggb_menon2007_rb(
     uint8_t* bgr,
     ptrdiff_t bgr_pitch,
     int width,
     int height);
 
-extern __global__ void bggr_menon2007_g(
+extern __global__ void rggb_softmenon_rb(
+    uint8_t* bgr,
+    ptrdiff_t bgr_pitch,
+    int width,
+    int height);
+
+extern __global__ void bggr_softmenon_g(
     const uint8_t* raw,
     ptrdiff_t raw_pitch,
     uint8_t* bgr,
     ptrdiff_t bgr_pitch,
     int width,
-    int height, bool soft = false);
+    int height);
 
-extern __global__ void bggr_menon2007_rb(
+extern __global__ void bggr_softmenon_rb(
     uint8_t* bgr,
     ptrdiff_t bgr_pitch,
     int width,

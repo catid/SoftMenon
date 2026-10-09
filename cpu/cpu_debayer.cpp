@@ -3,6 +3,7 @@
 #include "menon2007_cpu.hpp"
 
 #include <algorithm>
+#include <atomic>
 #include <cstring>
 #include <limits>
 #include <new>
@@ -78,45 +79,31 @@ bool Debayer::Allocate(int new_width, int new_height)
         padded_height > std::numeric_limits<int>::max() ||
         padded_width * padded_height > std::numeric_limits<int>::max() / 3)
         return false;
-    if (width == new_width && height == new_height && raw_padded_data && bgr_padded_data)
+    if (width == new_width && height == new_height && raw_padded_data)
         return true;
 
     const size_t raw_bytes = static_cast<size_t>(padded_width * padded_height);
     std::unique_ptr<uint8_t[]> raw(new (std::nothrow) uint8_t[raw_bytes]());
-    std::unique_ptr<uint8_t[]> bgr(new (std::nothrow) uint8_t[raw_bytes * 3]());
-    if (!raw || !bgr) return false;
+    if (!raw) return false;
 
     // Commit only after all allocations succeed, preserving prior valid state.
     Free();
     width = new_width;
     height = new_height;
-    raw_padded_width = bgr_padded_width = static_cast<int>(padded_width);
-    raw_padded_height = bgr_padded_height = static_cast<int>(padded_height);
+    raw_padded_width = static_cast<int>(padded_width);
+    raw_padded_height = static_cast<int>(padded_height);
     raw_padded_pitch = raw_padded_width;
-    bgr_padded_pitch = bgr_padded_width * 3;
     raw_padded_data = raw.release();
-    bgr_padded_data = bgr.release();
     return true;
 }
 
 void Debayer::Free()
 {
     delete[] raw_padded_data;
-    delete[] bgr_padded_data;
-    raw_padded_data = bgr_padded_data = nullptr;
+    raw_padded_data = nullptr;
     raw_padded_pitch = raw_padded_width = raw_padded_height = 0;
-    bgr_padded_pitch = bgr_padded_width = bgr_padded_height = 0;
     width = height = 0;
-    soft_colors.reset();
     menon_workspaces.clear();
-}
-
-bool Debayer::AllocateSoftScratch()
-{
-    if (soft_colors) return true;
-    const size_t bytes = static_cast<size_t>(width) * height * 3;
-    soft_colors.reset(new (std::nothrow) uint8_t[bytes]);
-    return soft_colors != nullptr;
 }
 
 bool Debayer::AllocateMenonScratch()
@@ -161,11 +148,6 @@ void Debayer::PadRaw(const uint8_t* source, int source_pitch)
 
 int Debayer::Process(const raw_image_t* input, bgr_image_t* output)
 {
-    return ProcessImpl(input, output, 0);
-}
-
-int Debayer::ProcessImpl(const raw_image_t* input, bgr_image_t* output, int diagnostic)
-{
     std::lock_guard<std::mutex> processing_lock(process_mutex);
     if (!input || !output || !input->raw_data || !output->bgr_data) return -1;
     if (input->width < 2 || input->height < 2 ||
@@ -183,19 +165,18 @@ int Debayer::ProcessImpl(const raw_image_t* input, bgr_image_t* output, int diag
     const int algorithm = input->algorithm;
     PadRaw(input->raw_data, input_pitch);
     const uint8_t* raw_origin = raw_padded_data + SARONIC_DEBAYER_PAD * raw_padded_pitch + SARONIC_DEBAYER_PAD;
-    uint8_t* bgr_origin = bgr_padded_data + SARONIC_DEBAYER_PAD * bgr_padded_pitch + SARONIC_DEBAYER_PAD * 3;
     try {
-        if (!diagnostic && algorithm == SARONIC_DEBAYER_BILINEAR) {
+        if (algorithm == SARONIC_DEBAYER_BILINEAR) {
             RunRows(height, 1, [=](int begin, int end) {
                 bilinear_cpu_rows(raw_origin, raw_padded_pitch, output->bgr_data, output_pitch,
                     width, height, rggb, begin, end);
             });
-        } else if (!diagnostic && algorithm == SARONIC_DEBAYER_MALVAR2004) {
+        } else if (algorithm == SARONIC_DEBAYER_MALVAR2004) {
             RunRows(height, 1, [=](int begin, int end) {
                 malvar2004_cpu_rows(raw_origin, raw_padded_pitch, output->bgr_data, output_pitch,
                     width, height, rggb, begin, end);
             });
-        } else if (!diagnostic && algorithm == SARONIC_DEBAYER_MENON2007) {
+        } else if (algorithm == SARONIC_DEBAYER_MENON2007) {
             if (!AllocateMenonScratch()) return -3;
             // This partition is identical to RunRows(height, 1). Each task
             // reuses one private tile workspace and publishes disjoint rows.
@@ -207,55 +188,51 @@ int Debayer::ProcessImpl(const raw_image_t* input, bgr_image_t* output, int diag
                     width, height, rggb, begin, end);
             });
         } else {
-            const bool soft = diagnostic != 1;
-            if (soft && !AllocateSoftScratch()) return -3;
             const int work_width = (width + 1) & ~1;
             const int work_height = (height + 1) & ~1;
-            const int green_origin = SARONIC_DEBAYER_PAD - 2;
-            RunRows(work_height + 4, 2, [=](int begin, int end) {
-                const uint8_t* raw = raw_padded_data + (green_origin + begin) * raw_padded_pitch + green_origin;
-                uint8_t* bgr = bgr_padded_data + (green_origin + begin) * bgr_padded_pitch + green_origin * 3;
-                if (soft)
-                    bggr_softmenon_g_cpu(raw, raw_padded_pitch, bgr, bgr_padded_pitch, work_width + 4, end - begin);
-                else
-                    bggr_menon2007_g_cpu(raw, raw_padded_pitch, bgr, bgr_padded_pitch, work_width + 4, end - begin);
-            });
-            uint8_t* completed = soft ? soft_colors.get() : bgr_origin;
-            const int completed_pitch = soft ? width * 3 : bgr_padded_pitch;
-            if (soft) {
-                // Immutable source lets SIMD load whole interleaved pixels
-                // without reading bytes another task is concurrently writing.
-                RunRows(height, 1, [=](int begin, int end) {
-                    bggr_softmenon_rb_rows(bgr_origin, bgr_padded_pitch,
-                        completed, completed_pitch, width, height, begin, end);
-                });
-            } else {
-                RunRows(work_height, 2, [=](int begin, int end) {
-                    bggr_menon2007_rb_cpu(bgr_origin + begin * bgr_padded_pitch,
-                        bgr_padded_pitch, work_width, end - begin);
-                });
-            }
-            if (!diagnostic) {
-                const int variant = median_cpu_variant_supported(2) ? 2 : 1;
-                RunRows(height, 1, [=](int begin, int end) {
-                    median_cpu_rows(completed, completed_pitch, output->bgr_data, output_pitch,
-                        width, height, false, begin, end, variant, rggb);
-                });
-            } else {
-                RunRows(height, 1, [=](int begin, int end) {
-                    for (int y = begin; y < end; ++y) {
-                        const uint8_t* source = completed + static_cast<size_t>(y) * completed_pitch;
-                        uint8_t* destination = output->bgr_data + static_cast<size_t>(y) * output_pitch;
-                        if (!rggb) std::memcpy(destination, source, static_cast<size_t>(width) * 3);
-                        else for (int x = 0; x < width; ++x) {
-                            destination[3 * x] = source[3 * x + 2];
-                            destination[3 * x + 1] = source[3 * x + 1];
-                            destination[3 * x + 2] = source[3 * x];
+            // Complete a small strip while both intermediates fit private cache.
+            // Strips start on an even CFA row. Duplicate halo computation avoids
+            // intermediate synchronization and preserves the exact stage order.
+            const int variant = median_cpu_variant_supported(2) ? 2 : 1;
+            std::atomic<bool> tile_failed{false};
+            // The referenced failure flag must outlive queued callbacks,
+            // including when submission or the caller task throws.
+            try {
+                RunRows(work_height, 2, [=, &tile_failed](int task_begin, int task_end) {
+                    try {
+                        const int gp = ((work_width + 4) * 3 + 63) & ~63;
+                        const int cp = width * 3;
+                        thread_local std::vector<uint8_t> green_tile, color_tile;
+                        green_tile.resize(static_cast<size_t>(64 + 4) * gp);
+                        color_tile.resize(static_cast<size_t>(64 + 4) * cp);
+                        for (int begin = task_begin; begin < task_end; begin += 64) {
+                            const int end = std::min(task_end, begin + 64);
+                            const int green_first = begin - 2;
+                            bggr_softmenon_g_cpu(
+                                raw_origin + static_cast<ptrdiff_t>(green_first) * raw_padded_pitch - 2,
+                                raw_padded_pitch, green_tile.data(), gp, work_width + 4, end - begin + 4);
+                            const int rb_begin = std::max(0, begin - 1) - green_first;
+                            const int rb_end = std::min(height, end + 1) - green_first;
+                            bggr_softmenon_rb_rows(green_tile.data() + 6, gp, color_tile.data(), cp,
+                                width, rb_end, rb_begin, rb_end);
+                            const int source_first = begin == 0 ? 0 : green_first;
+                            const int skip = source_first - green_first;
+                            median_cpu_rows(color_tile.data() + static_cast<size_t>(skip) * cp, cp,
+                                output->bgr_data + static_cast<size_t>(source_first) * output_pitch,
+                                output_pitch, width, std::min(height, end + 1) - source_first, false,
+                                begin - source_first, std::min(height, end) - source_first, variant, rggb);
                         }
+                    } catch (...) {
+                        tile_failed.store(true, std::memory_order_release);
                     }
                 });
+            } catch (...) {
+                if (thread_pool) thread_pool->WaitAll();
+                throw;
             }
+            return tile_failed.load(std::memory_order_acquire) ? -3 : 0;
         }
+
     } catch (...) {
         // Queued work may still reference this instance and its allocations.
         if (thread_pool) thread_pool->WaitAll();

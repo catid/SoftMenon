@@ -525,28 +525,16 @@ __global__ void bggr_bilinear(
 }
 
 //------------------------------------------------------------------------------
-// Menon 2007 Algorithm
+// SoftMenon: posterior-weighted green followed by color-difference reconstruction.
+#include "softmenon_green.cuh"
 
-// Legacy integer reconstruction retained as the core of SoftMenon.
-// It rounds intermediate averages and retains close-score diagonal averaging.
-// The public Menon 2007 baseline uses the full DDFAPD stages separately.
-
-#define ENABLE_CLOSE_AVERAGING
-
-__device__ inline int softmenon_round_div(int numerator, int denominator) {
-    int q = numerator / denominator, r = numerator % denominator;
-    if (r < 0) { --q; r += denominator; }
-    return q + (2 * r >= denominator);
-}
-
-
-__global__ void rggb_menon2007_g(
+__global__ void rggb_softmenon_g(
     const uint8_t* raw,
     ptrdiff_t raw_pitch,
     uint8_t* bgr,
     ptrdiff_t bgr_pitch,
     int width,
-    int height, bool soft)
+    int height)
 {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -567,48 +555,8 @@ __global__ void rggb_menon2007_g(
         const uint8_t* P = block;
         uint8_t* bgr = bgr_block;
 
-        // Estimate G at R pixel
-        int16_t G_h = 0;
-        int16_t G_v = 0;
+        const int G_est = softmenon_green::estimate(P, raw_pitch);
 
-        // Horizontal estimation
-        int16_t G_left = P[-1];
-        int16_t G_right = P[1];
-        int16_t R_center = P[0];
-        int16_t R_left = P[-2];
-        int16_t R_right = P[2];
-
-        G_h = ((G_left + G_right + 1) >> 1) + ((2 * R_center - R_left - R_right + 2) >> 2);
-
-        // Vertical estimation
-        int16_t G_up = P[-raw_pitch];
-        int16_t G_down = P[raw_pitch];
-        int16_t R_up = P[-2 * raw_pitch];
-        int16_t R_down = P[2 * raw_pitch];
-
-        G_v = ((G_up + G_down + 1) >> 1) + ((2 * R_center - R_up - R_down + 2) >> 2);
-
-        // Compute classifiers S_h and S_v
-        int16_t C_center_h = R_center - G_h;
-        int16_t C_left = R_left - G_left;
-        int16_t C_right = R_right - G_right;
-        int16_t S_h = abs(C_center_h - C_left) + abs(C_center_h - C_right);
-
-        int16_t C_center_v = R_center - G_v;
-        int16_t C_up = R_up - G_up;
-        int16_t C_down = R_down - G_down;
-        int16_t S_v = abs(C_center_v - C_up) + abs(C_center_v - C_down);
-
-        // Decision
-        int16_t G_est = (S_h <= S_v) ? G_h : G_v;
-#ifdef ENABLE_CLOSE_AVERAGING
-        if (abs(S_h - S_v) <= 27) {
-            G_est = (G_h + G_v + 1) >> 1;
-        }
-#endif
-        if (soft) G_est = softmenon_round_div((int(S_v) + 1) * G_h + (int(S_h) + 1) * G_v, int(S_h) + S_v + 2);
-
-        //bgr[0] = 255;
         bgr[1] = saturate_cast_int16_to_uint8(G_est);
         bgr[2] = P[0];
     }
@@ -618,51 +566,11 @@ __global__ void rggb_menon2007_g(
         const uint8_t* P = block + raw_pitch + 1;
         uint8_t* bgr = bgr_block + bgr_pitch + 3;
 
-        // Estimate G at B pixel
-        int16_t G_h = 0;
-        int16_t G_v = 0;
-
-        // Horizontal estimation
-        int16_t G_left = P[-1];
-        int16_t G_right = P[1];
-        int16_t B_center = P[0];
-        int16_t B_left = P[-2];
-        int16_t B_right = P[2];
-
-        G_h = ((G_left + G_right + 1) >> 1) + ((2 * B_center - B_left - B_right + 2) >> 2);
-
-        // Vertical estimation
-        int16_t G_up = P[-raw_pitch];
-        int16_t G_down = P[raw_pitch];
-        int16_t B_up = P[-2 * raw_pitch];
-        int16_t B_down = P[2 * raw_pitch];
-
-        G_v = ((G_up + G_down + 1) >> 1) + ((2 * B_center - B_up - B_down + 2) >> 2);
-
-        // Compute classifiers S_h and S_v
-        int16_t C_center_h = B_center - G_h;
-        int16_t C_left = B_left - G_left;
-        int16_t C_right = B_right - G_right;
-        int16_t S_h = abs(C_center_h - C_left) + abs(C_center_h - C_right);
-
-        int16_t C_center_v = B_center - G_v;
-        int16_t C_up = B_up - G_up;
-        int16_t C_down = B_down - G_down;
-        int16_t S_v = abs(C_center_v - C_up) + abs(C_center_v - C_down);
-
-        // Decision
-        int16_t G_est = (S_h <= S_v) ? G_h : G_v;
-#ifdef ENABLE_CLOSE_AVERAGING
-        if (abs(S_h - S_v) <= 29) {
-            G_est = (G_h + G_v + 1) >> 1;
-        }
-#endif
-        if (soft) G_est = softmenon_round_div((int(S_v) + 1) * G_h + (int(S_h) + 1) * G_v, int(S_h) + S_v + 2);
+        const int G_est = softmenon_green::estimate(P, raw_pitch);
 
         // Clamp the value
         bgr[0] = P[0];
         bgr[1] = saturate_cast_int16_to_uint8(G_est);
-        //bgr[2] = 255;
     }
 
     // Upper Right:
@@ -670,9 +578,7 @@ __global__ void rggb_menon2007_g(
         const uint8_t* P = block + 1;
         uint8_t* bgr = bgr_block + 3;
 
-        //bgr[0] = 255;
         bgr[1] = P[0];
-        //bgr[2] = 255;
     }
 
     // Lower Left:
@@ -680,13 +586,11 @@ __global__ void rggb_menon2007_g(
         const uint8_t* P = block + raw_pitch;
         uint8_t* bgr = bgr_block + bgr_pitch;
 
-        //bgr[0] = 255;
         bgr[1] = P[0];
-        //bgr[2] = 255;
     }
 }
 
-__global__ void rggb_menon2007_rb(
+__global__ void rggb_softmenon_rb(
     uint8_t* bgr,
     ptrdiff_t bgr_pitch,
     int width,
@@ -710,9 +614,6 @@ __global__ void rggb_menon2007_rb(
         const int pixel_x = x * 2 + 0;
         const int pixel_y = y * 2 + 0;
         uint8_t* bgr_pixel = bgr_block; // Pointer to the pixel at P0
-
-        // Coordinates of the current pixel
-        // For simplicity, we assume that the image is padded sufficiently
 
         // Edge-Directed Interpolation of (B - G) at red pixel
         // Using diagonal neighbors for interpolation
@@ -744,11 +645,10 @@ __global__ void rggb_menon2007_rb(
 
         // Decision based on gradients
         int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-#ifdef ENABLE_CLOSE_AVERAGING
         if (abs(Grad_h - Grad_v) <= 26) {
             CD_est = (CD_h + CD_v + 1) >> 1;
         }
-#endif
+
 
         // Estimate Blue value at red pixel
         int16_t G_center = read_bgr_reflected(bgr, bgr_pitch, width, height, pixel_x + (0), pixel_y + (0), 1);   // Green at current red pixel
@@ -791,11 +691,10 @@ __global__ void rggb_menon2007_rb(
 
         // Decision based on gradients
         int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-#ifdef ENABLE_CLOSE_AVERAGING
         if (abs(Grad_h - Grad_v) <= 26) {
             CD_est = (CD_h + CD_v + 1) >> 1;
         }
-#endif
+
 
         // Estimate Red value at blue pixel
         int16_t G_center = read_bgr_reflected(bgr, bgr_pitch, width, height, pixel_x + (0), pixel_y + (0), 1);   // Green at current blue pixel
@@ -878,13 +777,13 @@ __global__ void rggb_menon2007_rb(
     }
 }
 
-__global__ void bggr_menon2007_g(
+__global__ void bggr_softmenon_g(
     const uint8_t* raw,
     ptrdiff_t raw_pitch,
     uint8_t* bgr,
     ptrdiff_t bgr_pitch,
     int width,
-    int height, bool soft)
+    int height)
 {
     int x = blockIdx.x * blockDim.x + threadIdx.x; // Column index in 2x2 blocks
     int y = blockIdx.y * blockDim.y + threadIdx.y; // Row index in 2x2 blocks
@@ -907,51 +806,11 @@ __global__ void bggr_menon2007_g(
         const uint8_t* P = block;
         uint8_t* bgr = bgr_block;
 
-        // Estimate G at B pixel
-        int16_t G_h = 0;
-        int16_t G_v = 0;
-
-        // Horizontal estimation
-        int16_t G_left = P[-1];        // G at (i, j - 1)
-        int16_t G_right = P[1];        // G at (i, j + 1)
-        int16_t B_center = P[0];       // B at (i, j)
-        int16_t B_left = P[-2];        // B at (i, j - 2)
-        int16_t B_right = P[2];        // B at (i, j + 2)
-
-        G_h = ((G_left + G_right + 1) >> 1) + ((2 * B_center - B_left - B_right + 2) >> 2);
-
-        // Vertical estimation
-        int16_t G_up = P[-raw_pitch];        // G at (i - 1, j)
-        int16_t G_down = P[raw_pitch];       // G at (i + 1, j)
-        int16_t B_up = P[-2 * raw_pitch];    // B at (i - 2, j)
-        int16_t B_down = P[2 * raw_pitch];   // B at (i + 2, j)
-
-        G_v = ((G_up + G_down + 1) >> 1) + ((2 * B_center - B_up - B_down + 2) >> 2);
-
-        // Compute classifiers S_h and S_v
-        int16_t C_center_h = B_center - G_h;
-        int16_t C_left = B_left - G_left;
-        int16_t C_right = B_right - G_right;
-        int16_t S_h = abs(C_center_h - C_left) + abs(C_center_h - C_right);
-
-        int16_t C_center_v = B_center - G_v;
-        int16_t C_up = B_up - G_up;
-        int16_t C_down = B_down - G_down;
-        int16_t S_v = abs(C_center_v - C_up) + abs(C_center_v - C_down);
-
-        // Decision
-        int16_t G_est = (S_h <= S_v) ? G_h : G_v;
-#ifdef ENABLE_CLOSE_AVERAGING
-        if (abs(S_h - S_v) <= 29) {
-            G_est = (G_h + G_v + 1) >> 1;
-        }
-#endif
-        if (soft) G_est = softmenon_round_div((int(S_v) + 1) * G_h + (int(S_h) + 1) * G_v, int(S_h) + S_v + 2);
+        const int G_est = softmenon_green::estimate(P, raw_pitch);
 
         // Clamp the value
         bgr[0] = P[0]; // B value
         bgr[1] = saturate_cast_int16_to_uint8(G_est);
-        // bgr[2] = 255; // R value (to be filled in later)
     }
 
     // Upper Right (P1): G pixel
@@ -977,55 +836,15 @@ __global__ void bggr_menon2007_g(
         const uint8_t* P = block + raw_pitch + 1;
         uint8_t* bgr = bgr_block + bgr_pitch + 3;
 
-        // Estimate G at R pixel
-        int16_t G_h = 0;
-        int16_t G_v = 0;
-
-        // Horizontal estimation
-        int16_t G_left = P[-1];        // G at (i, j - 1)
-        int16_t G_right = P[1];        // G at (i, j + 1)
-        int16_t R_center = P[0];       // R at (i, j)
-        int16_t R_left = P[-2];        // R at (i, j - 2)
-        int16_t R_right = P[2];        // R at (i, j + 2)
-
-        G_h = ((G_left + G_right + 1) >> 1) + ((2 * R_center - R_left - R_right + 2) >> 2);
-
-        // Vertical estimation
-        int16_t G_up = P[-raw_pitch];        // G at (i - 1, j)
-        int16_t G_down = P[raw_pitch];       // G at (i + 1, j)
-        int16_t R_up = P[-2 * raw_pitch];    // R at (i - 2, j)
-        int16_t R_down = P[2 * raw_pitch];   // R at (i + 2, j)
-
-        G_v = ((G_up + G_down + 1) >> 1) + ((2 * R_center - R_up - R_down + 2) >> 2);
-
-        // Compute classifiers S_h and S_v
-        int16_t C_center_h = R_center - G_h;
-        int16_t C_left = R_left - G_left;
-        int16_t C_right = R_right - G_right;
-        int16_t S_h = abs(C_center_h - C_left) + abs(C_center_h - C_right);
-
-        int16_t C_center_v = R_center - G_v;
-        int16_t C_up = R_up - G_up;
-        int16_t C_down = R_down - G_down;
-        int16_t S_v = abs(C_center_v - C_up) + abs(C_center_v - C_down);
-
-        // Decision
-        int16_t G_est = (S_h <= S_v) ? G_h : G_v;
-#ifdef ENABLE_CLOSE_AVERAGING
-        if (abs(S_h - S_v) <= 27) {
-            G_est = (G_h + G_v + 1) >> 1;
-        }
-#endif
-        if (soft) G_est = softmenon_round_div((int(S_v) + 1) * G_h + (int(S_h) + 1) * G_v, int(S_h) + S_v + 2);
+        const int G_est = softmenon_green::estimate(P, raw_pitch);
 
         // Clamp the value
-        // bgr[0] = 255; // B value (to be filled in later)
         bgr[1] = saturate_cast_int16_to_uint8(G_est);
         bgr[2] = P[0]; // R value
     }
 }
 
-__global__ void bggr_menon2007_rb(
+__global__ void bggr_softmenon_rb(
     uint8_t* bgr,
     ptrdiff_t bgr_pitch,
     int width,
@@ -1083,11 +902,10 @@ __global__ void bggr_menon2007_rb(
 
         // Decision based on gradients
         int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-#ifdef ENABLE_CLOSE_AVERAGING
         if (abs(Grad_h - Grad_v) <= 26) {
             CD_est = (CD_h + CD_v + 1) >> 1;
         }
-#endif
+
 
         // Estimate Red value at blue pixel
         int16_t G_center = read_bgr_reflected(bgr, bgr_pitch, width, height, pixel_x + (0), pixel_y + (0), 1);   // Green at current blue pixel
@@ -1131,11 +949,10 @@ __global__ void bggr_menon2007_rb(
 
         // Decision based on gradients
         int16_t CD_est = (Grad_h <= Grad_v) ? CD_h : CD_v;
-#ifdef ENABLE_CLOSE_AVERAGING
         if (abs(Grad_h - Grad_v) <= 26) {
             CD_est = (CD_h + CD_v + 1) >> 1;
         }
-#endif
+
 
         // Estimate Blue value at red pixel
         int16_t G_center = read_bgr_reflected(bgr, bgr_pitch, width, height, pixel_x + (0), pixel_y + (0), 1);   // Green at current red pixel

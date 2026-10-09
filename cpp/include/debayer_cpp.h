@@ -63,8 +63,6 @@ public:
     int32_t Process(const raw_image_t* input, const bgr_image_t* output);
 
 protected:
-    friend struct DebayerBenchmarkAccess;
-    int32_t ProcessImpl(const raw_image_t* input, const bgr_image_t* output, int diagnostic);
     bool Allocate(int width, int height);
     void Free();
 

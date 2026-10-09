@@ -20,10 +20,11 @@ const Method methods[] = {
     {"bggr-malvar", debayer_bggr2bgr_malvar2004, true, 2},
     {"rggb-menon", debayer_rggb2bgr_menon2007, false, 0},
     {"bggr-menon", debayer_bggr2bgr_menon2007, true, 0},
-    {"rggb-softmenon", debayer_rggb2bgr_softmenon, false, 0},
-    {"bggr-softmenon", debayer_bggr2bgr_softmenon, true, 0},
+    {"rggb-softmenon", debayer_rggb2bgr_softmenon, false, 3},
+    {"bggr-softmenon", debayer_bggr2bgr_softmenon, true, 3},
 };
 constexpr size_t guard = 64;
+constexpr int pad = SARONIC_DEBAYER_PAD;
 void check(cudaError_t error) {
     if (error != cudaSuccess) throw std::runtime_error(cudaGetErrorString(error));
 }
@@ -73,10 +74,82 @@ int expected(const std::vector<uint8_t>& raw, int width, int height, int x, int 
     return std::max(0, std::min(255, (sum + 8) / 16));
 }
 
+// Independent scalar pipeline: explicit score-pair table, int64 rational
+// blending, immutable initial colors and sorted 3x3 color-difference medians.
+std::vector<uint8_t> softmenon_reference(const std::vector<uint8_t>& raw,
+                                       int width, int height, bool bggr) {
+    auto clip = [](int value) { return std::max(0, std::min(255, value)); };
+    auto candidate = [&](int x, int y, bool vertical) {
+        const int dx = vertical ? 0 : 1, dy = vertical ? 1 : 0;
+        return (sample(raw,width,height,x-dx,y-dy) + sample(raw,width,height,x+dx,y+dy) + 1) / 2 +
+            ((2*sample(raw,width,height,x,y) - sample(raw,width,height,x-2*dx,y-2*dy) -
+              sample(raw,width,height,x+2*dx,y+2*dy) + 2) >> 2);
+    };
+    auto difference = [&](int x, int y, bool vertical) {
+        return sample(raw,width,height,x,y) - candidate(x,y,vertical);
+    };
+    auto score = [&](int x, int y, bool vertical) {
+        constexpr int pairs[8][3] = {{0,2,1},{-2,2,1},{-1,1,1},{0,0,3},
+                                    {-2,0,3},{-1,-1,1},{0,-2,1},{-2,-2,1}};
+        int total = 0;
+        for (const auto& pair : pairs) {
+            const int dx=pair[0], dy=pair[1];
+            const int ax=x+(vertical?dy:dx), ay=y+(vertical?dx:dy);
+            total += pair[2] * std::abs(difference(ax,ay,vertical) -
+                difference(ax+(vertical?0:2),ay+(vertical?2:0),vertical));
+        }
+        return total;
+    };
+    std::vector<uint8_t> initial(static_cast<size_t>(width)*height*3,0);
+    for (int y=0;y<height;++y) for (int x=0;x<width;++x) {
+        uint8_t* p=initial.data()+(static_cast<size_t>(y)*width+x)*3;
+        const int native=color(x,y,bggr);p[native]=sample(raw,width,height,x,y);
+        if (native==1) continue;
+        const int64_t h=int64_t(score(x,y,true))+1, v=int64_t(score(x,y,false))+1;
+        const int64_t denominator=h*h+v*v;
+        const int64_t numerator=h*h*candidate(x,y,false)+v*v*candidate(x,y,true);
+        p[1]=clip(int(std::max<int64_t>(0,numerator+denominator/2)/denominator));
+    }
+    auto at = [&](const std::vector<uint8_t>& image,int x,int y,int c) {
+        return int(image[(static_cast<size_t>(reflected(y,height))*width+reflected(x,width))*3+c]);
+    };
+    std::vector<uint8_t> complete=initial;
+    for (int y=0;y<height;++y) for (int x=0;x<width;++x) for (int c : {0,2}) {
+        const int native=color(x,y,bggr);if(native==c)continue;
+        auto d = [&](int dx,int dy) { return at(initial,x+dx,y+dy,c)-at(initial,x+dx,y+dy,1); };
+        int delta;
+        if (native!=1) {
+            const int ul=d(-1,-1),ur=d(1,-1),dl=d(-1,1),dr=d(1,1);
+            const int a=(ul+dr+1)>>1,b=(ur+dl+1)>>1;
+            const int ah=std::abs(ul-dr),av=std::abs(ur-dl);
+            delta=std::abs(ah-av)<=26 ? (a+b+1)>>1 : ah<=av ? a : b;
+        } else {
+            const bool horizontal=color(x-1,y,bggr)==c;
+            delta=(d(horizontal?-1:0,horizontal?0:-1)+d(horizontal?1:0,horizontal?0:1)+1)>>1;
+        }
+        complete[(static_cast<size_t>(y)*width+x)*3+c]=clip(at(initial,x,y,1)+delta);
+    }
+    std::vector<uint8_t> result=complete;
+    for (int y=0;y<height;++y) for (int x=0;x<width;++x) {
+        int med[2];
+        for(int k=0;k<2;++k) {
+            std::array<int,9> values;int n=0;
+            for(int dy=-1;dy<=1;++dy)for(int dx=-1;dx<=1;++dx)
+                values[n++]=at(complete,x+dx,y+dy,2*k)-at(complete,x+dx,y+dy,1);
+            std::sort(values.begin(),values.end());med[k]=values[4];
+        }
+        const int native=color(x,y,bggr);
+        const int green=native==1 ? at(complete,x,y,1) : clip(at(complete,x,y,native)-med[native/2]);
+        uint8_t* p=result.data()+(static_cast<size_t>(y)*width+x)*3;p[1]=green;
+        for(int c : {0,2})if(c!=native)p[c]=clip(green+med[c/2]);
+    }
+    return result;
+}
+
 void run_case(int width, int height, const Method& method, bool constant, bool uninitialized) {
-    const size_t raw_pitch = width + 4 + 7;
-    const size_t bgr_pitch = 3 * (width + 4) + 13;
-    const size_t rows = height + 4;
+    const size_t raw_pitch = width + 2 * pad + 7;
+    const size_t bgr_pitch = 3 * (width + 2 * pad) + 13;
+    const size_t rows = height + 2 * pad;
     const size_t raw_bytes = raw_pitch * rows, bgr_bytes = bgr_pitch * rows;
     const std::array<uint8_t, 3> flat = {31, 117, 203};
     std::vector<uint8_t> raw(static_cast<size_t>(width) * height);
@@ -85,9 +158,11 @@ void run_case(int width, int height, const Method& method, bool constant, bool u
         random ^= random << 13; random ^= random >> 17; random ^= random << 5;
         raw[static_cast<size_t>(y) * width + x] = constant ? flat[color(x,y,method.bggr)] : static_cast<uint8_t>(random);
     }
+    const std::vector<uint8_t> soft_expected = method.oracle==3 && !constant ?
+        softmenon_reference(raw,width,height,method.bggr) : std::vector<uint8_t>{};
     std::vector<uint8_t> padded(raw_bytes + 2 * guard, 0xD3);
     for (int y = 0; y < height; ++y)
-        std::copy_n(raw.data() + static_cast<size_t>(y) * width, width, padded.data() + guard + (y + 2) * raw_pitch + 2);
+        std::copy_n(raw.data() + static_cast<size_t>(y) * width, width, padded.data() + guard + (y + pad) * raw_pitch + pad);
     uint8_t *device_raw = nullptr, *device_bgr = nullptr;
     cudaStream_t stream;
     check(cudaStreamCreate(&stream));
@@ -98,8 +173,8 @@ void run_case(int width, int height, const Method& method, bool constant, bool u
     std::vector<uint8_t> reflected_raw(padded.size());
     check(cudaMemcpyAsync(reflected_raw.data(), device_raw, reflected_raw.size(), cudaMemcpyDeviceToHost, stream));
     check(cudaStreamSynchronize(stream));
-    for (int y = 0; y < height + 4; ++y) for (int x = 0; x < width + 4; ++x)
-        padded[guard + y * raw_pitch + x] = sample(raw, width, height, x - 2, y - 2);
+    for (int y = 0; y < height + 2 * pad; ++y) for (int x = 0; x < width + 2 * pad; ++x)
+        padded[guard + y * raw_pitch + x] = sample(raw, width, height, x - pad, y - pad);
     require(reflected_raw == padded, std::string(method.name) + ": mirror corrupted guard/pitch bytes or CFA phase");
     std::vector<uint8_t> first;
     for (int repeat = 0; repeat < (uninitialized ? 1 : 2); ++repeat) {
@@ -111,10 +186,10 @@ void run_case(int width, int height, const Method& method, bool constant, bool u
             check(cudaMemsetAsync(device_bgr + guard + bgr_bytes, poison, guard, stream));
             for (size_t y = 0; y < rows; ++y) {
                 uint8_t* row = device_bgr + guard + y * bgr_pitch;
-                if (y < 2 || y >= static_cast<size_t>(height) + 2) check(cudaMemsetAsync(row, poison, bgr_pitch, stream));
+                if (y < pad || y >= static_cast<size_t>(height) + pad) check(cudaMemsetAsync(row, poison, bgr_pitch, stream));
                 else {
-                    check(cudaMemsetAsync(row, poison, 6, stream));
-                    check(cudaMemsetAsync(row + 6 + width * 3, poison, bgr_pitch - 6 - width * 3, stream));
+                    check(cudaMemsetAsync(row, poison, 3 * pad, stream));
+                    check(cudaMemsetAsync(row + 3 * pad + width * 3, poison, bgr_pitch - 3 * pad - width * 3, stream));
                 }
             }
         } else check(cudaMemsetAsync(device_bgr, poison, bgr_bytes + 2 * guard, stream));
@@ -126,17 +201,20 @@ void run_case(int width, int height, const Method& method, bool constant, bool u
             bool interior = false;
             if (i >= guard && i < guard + bgr_bytes) {
                 const size_t row = (i - guard) / bgr_pitch, column = (i - guard) % bgr_pitch;
-                interior = row >= 2 && row < static_cast<size_t>(height) + 2 && column >= 6 && column < static_cast<size_t>(width) * 3 + 6;
+                interior = row >= pad && row < static_cast<size_t>(height) + pad && column >= 3 * pad && column < static_cast<size_t>(width) * 3 + 3 * pad;
             }
             if (!interior) require(output[i] == poison, std::string(method.name) + ": output guard, halo, or stride padding overwritten");
         }
         std::vector<uint8_t> result(static_cast<size_t>(width) * height * 3);
         for (int y = 0; y < height; ++y) for (int x = 0; x < width; ++x) for (int c = 0; c < 3; ++c) {
-            const int actual = output[guard + (y + 2) * bgr_pitch + (x + 2) * 3 + c];
+            const int actual = output[guard + (y + pad) * bgr_pitch + (x + pad) * 3 + c];
             result[(static_cast<size_t>(y) * width + x) * 3 + c] = actual;
             if (c == color(x, y, method.bggr))
                 require(actual == raw[static_cast<size_t>(y) * width + x], std::string(method.name) + ": measured sample changed");
             if (constant) require(actual == flat[c], std::string(method.name) + ": flat-color reconstruction failed at " + std::to_string(x) + "," + std::to_string(y));
+            else if (method.oracle==3)
+                require(actual == soft_expected[(static_cast<size_t>(y)*width+x)*3+c],
+                        std::string(method.name) + ": scalar pipeline mismatch at " + std::to_string(x) + "," + std::to_string(y));
             else if (method.oracle)
                 require(actual == expected(raw,width,height,x,y,c,method), std::string(method.name) + ": CPU filter mismatch at " + std::to_string(x) + "," + std::to_string(y));
         }
@@ -147,6 +225,7 @@ void run_case(int width, int height, const Method& method, bool constant, bool u
 }
 
 void invalid_arguments() {
+    constexpr size_t rp = 2 + 2 * pad, bp = 3 * rp;
     uint8_t* a = reinterpret_cast<uint8_t*>(uintptr_t(0x100000));
     uint8_t* b = reinterpret_cast<uint8_t*>(uintptr_t(0x200000));
     require(debayer_mirror_image(nullptr, 1, 2, 6, a) == cudaErrorInvalidValue, "minimum width validation");
@@ -157,23 +236,29 @@ void invalid_arguments() {
     require(debayer_mirror_image(nullptr, 2, 2, 6, nullptr) == cudaErrorInvalidValue, "null input validation");
     require(debayer_menon2007_workspace_size(1, 2) == 0, "paper workspace dimensions");
     require(debayer_softmenon_workspace_size(2, 1) == 0, "soft workspace dimensions");
+    for (int size : {INT_MAX, INT_MAX - 2 * pad + 1}) {
+        require(debayer_menon2007_workspace_size(size, 2) == 0, "paper workspace width padding overflow");
+        require(debayer_menon2007_workspace_size(2, size) == 0, "paper workspace height padding overflow");
+        require(debayer_softmenon_workspace_size(size, 2) == 0, "soft workspace width padding overflow");
+        require(debayer_softmenon_workspace_size(2, size) == 0, "soft workspace height padding overflow");
+    }
     const size_t paper_bytes = debayer_menon2007_workspace_size(2, 2);
     const size_t soft_bytes = debayer_softmenon_workspace_size(2, 2);
     uint8_t* scratch = reinterpret_cast<uint8_t*>(uintptr_t(0x300000));
     for (bool soft : {false, true}) {
         const auto function = soft ? debayer_softmenon_with_workspace : debayer_menon2007_with_workspace;
         const size_t bytes = soft ? soft_bytes : paper_bytes;
-        require(function(nullptr,2,2,6,18,a,b,1,scratch,bytes-1) == cudaErrorInvalidValue, "short workspace");
-        require(function(nullptr,2,2,6,18,a,b,1,a,bytes) == cudaErrorInvalidValue, "input workspace overlap");
-        require(function(nullptr,2,2,6,18,a,b,1,b,bytes) == cudaErrorInvalidValue, "output workspace overlap");
-        require(function(nullptr,2,2,6,18,a,b,1,scratch+1,bytes) == cudaErrorInvalidValue, "workspace alignment");
-        require(function(nullptr,2,2,6,18,a,b,2,scratch,bytes) == cudaErrorInvalidValue, "workspace CFA");
+        require(function(nullptr,2,2,rp,bp,a,b,1,scratch,bytes-1) == cudaErrorInvalidValue, "short workspace");
+        require(function(nullptr,2,2,rp,bp,a,b,1,a,bytes) == cudaErrorInvalidValue, "input workspace overlap");
+        require(function(nullptr,2,2,rp,bp,a,b,1,b,bytes) == cudaErrorInvalidValue, "output workspace overlap");
+        require(function(nullptr,2,2,rp,bp,a,b,1,scratch+1,bytes) == cudaErrorInvalidValue, "workspace alignment");
+        require(function(nullptr,2,2,rp,bp,a,b,2,scratch,bytes) == cudaErrorInvalidValue, "workspace CFA");
     }
     for (const auto& method : methods) {
-        require(method.run(nullptr, 2, 2, 6, 17, a, b) == cudaErrorInvalidValue, "short output pitch validation");
-        require(method.run(nullptr, 2, 2, 6, SIZE_MAX, a, b) == cudaErrorInvalidValue, "overflow output pitch validation");
-        require(method.run(nullptr, 2, 2, 6, 18, a, nullptr) == cudaErrorInvalidValue, "null output validation");
-        require(method.run(nullptr, 2, 2, 6, 18, a, a + 3) == cudaErrorInvalidValue, "overlap validation");
+        require(method.run(nullptr, 2, 2, rp, bp-1, a, b) == cudaErrorInvalidValue, "short output pitch validation");
+        require(method.run(nullptr, 2, 2, rp, SIZE_MAX, a, b) == cudaErrorInvalidValue, "overflow output pitch validation");
+        require(method.run(nullptr, 2, 2, rp, bp, a, nullptr) == cudaErrorInvalidValue, "null output validation");
+        require(method.run(nullptr, 2, 2, rp, bp, a, a + 3) == cudaErrorInvalidValue, "overlap validation");
     }
 }
 } // namespace

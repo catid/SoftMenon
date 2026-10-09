@@ -2,7 +2,7 @@
 """Verify final CPU/CUDA binaries against recorded SoftMenon/paper output hashes.
 
 This does not rescore images. It verifies every selected image, crop and CFA
-against benchmark/results/softmenon-quality.jsonl.gz after exact ISA changes.
+against benchmark/results/quality-cpu.json.gz.
 """
 import argparse,gzip,hashlib,importlib.util,json,os,time
 from pathlib import Path
@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('benchmark_helpers',ROOT/'benchmark/run.py')
 helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
-METHODS={'refined_softmenon':'softmenon','paper':'menon2007'}
+METHODS={'softmenon':'softmenon','menon2007':'menon2007'}
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def normalize(v):
     if isinstance(v,dict):return {normalize(k):normalize(x) for k,x in v.items()}
@@ -20,7 +20,7 @@ def normalize(v):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--build',type=Path,required=True)
-    p.add_argument('--rows',type=Path,default=ROOT/'benchmark/results/softmenon-quality.jsonl.gz')
+    p.add_argument('--rows',type=Path,default=ROOT/'benchmark/results/quality-cpu.json.gz')
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--backends',nargs='+',choices=['cpu','cuda'],default=['cpu','cuda'])
     p.add_argument('--methods',nargs='+',choices=list(METHODS),default=list(METHODS))
@@ -35,13 +35,14 @@ def main():
             target=(ROOT/path).resolve()
             if sha(target)!=digest:raise RuntimeError(f'Source changed: {path}')
             checked[str(target)]=digest
-    meta_path=a.rows.with_suffix('.meta.json');metadata=json.loads(meta_path.read_text())
-    if not metadata['complete'] or sha(a.rows)!=metadata['output_sha256']:raise RuntimeError('Quality artifact changed/incomplete')
-    rows=[json.loads(line) for line in gzip.open(a.rows,'rt')]
+    summary_path=a.rows.parent/'summary.json';summary=json.loads(summary_path.read_text())
+    if sha(a.rows)!=summary['artifact_sha256'][a.rows.name]:raise RuntimeError('Quality artifact changed')
+    with gzip.open(a.rows,'rt') as stream:metadata=json.load(stream)
+    rows=metadata['rows']
     expected={(r['path'],r['inset'],r['pattern'],r['method']):r['output_sha256_rgb'] for r in rows if r['method'] in a.methods}
     manifest_path=ROOT/'benchmark/datasets.json';manifest=json.loads(manifest_path.read_text())
-    if sha(manifest_path)!=metadata['frozen']['manifest_sha256']:raise RuntimeError('Dataset manifest changed')
-    checked[str(a.rows.resolve())]=sha(a.rows);checked[str(meta_path.resolve())]=sha(meta_path)
+    if sha(manifest_path)!=metadata['manifest_sha256']:raise RuntimeError('Dataset manifest changed')
+    checked[str(a.rows.resolve())]=sha(a.rows);checked[str(summary_path.resolve())]=sha(summary_path)
     checked[str(manifest_path.resolve())]=sha(manifest_path);checked[str(ROOT/'benchmark/run.py')]=sha(ROOT/'benchmark/run.py')
     cases=manifest['images'][:a.limit] if a.limit else manifest['images']
     backends={name:helper.Backend(build[name],a.workers if name=='cpu' else 0) for name in a.backends}
@@ -66,7 +67,7 @@ def main():
       if any(n!=required for n in count.values()):raise RuntimeError('Incomplete verification')
       report={'complete':True,'images':len(cases),'methods':a.methods,'insets':[0,16],'patterns':list(helper.PATTERNS),
         'exact_output_hash_matches':count,'builds':{name:build[name] for name in a.backends},'checked_files':checked,
-        'rows_sha256':sha(a.rows),'rows_metadata_sha256':sha(meta_path),'script_sha256':sha(__file__),
+        'rows_sha256':sha(a.rows),'summary_sha256':sha(summary_path),'script_sha256':sha(__file__),
         'elapsed_seconds':time.time()-start,'cpu_affinity':sorted(os.sched_getaffinity(0)) if hasattr(os,'sched_getaffinity') else None,
         'workers':a.workers,'cuda_visible_devices':os.environ.get('CUDA_VISIBLE_DEVICES'),
         'scope':'Full corpus output identity only. This is not a new quality estimate or inference benchmark.'}

@@ -57,7 +57,8 @@ def build(args):
             sources = [ROOT / "benchmark/bridge_cuda.cpp", ROOT / "c/src/debayer.cu",
                        ROOT / "c/src/debayer_kernel.cu", ROOT / "cpp/src/debayer_cpp.cu"]
             dependencies = [ROOT / "c/include/debayer.h", ROOT / "c/src/debayer_kernel.h",
-                            ROOT / "c/src/chroma_median.cuh", ROOT / "cpp/include/debayer_cpp.h",
+                            ROOT / "c/src/chroma_median.cuh", ROOT / "c/src/softmenon_green.cuh",
+                            ROOT / "cpp/include/debayer_cpp.h",
                             ROOT / "common/menon2007.hpp"]
             command = [args.nvcc, "-std=c++17", "-O3", "-shared", "-Xcompiler=-fPIC,-fvisibility=hidden",
                        "-lineinfo", f"-arch={args.cuda_arch}", "-I" + str(dest / "include"),
@@ -107,7 +108,7 @@ class Backend:
         self.library.bench_create.restype = pointer
         self.library.bench_destroy.argtypes = [pointer]
         self.library.bench_destroy.restype = None
-        for name in ("bench_process", "bench_diagnostic"):
+        for name in ("bench_process",):
             fn = getattr(self.library, name)
             fn.argtypes = [pointer, pointer, pointer] + [ctypes.c_int] * 6
             fn.restype = ctypes.c_int
@@ -125,9 +126,9 @@ class Backend:
 
     def call(self, raw, output, method, pattern):
         number = self.methods[method]
-        function = self.library.bench_process if number <= 4 else self.library.bench_diagnostic
+        function = self.library.bench_process
         status = function(self.context, raw.ctypes.data, output.ctypes.data, raw.shape[1], raw.shape[0],
-            raw.strides[0], output.strides[0], number if number <= 4 else number - 4,
+            raw.strides[0], output.strides[0], number,
             1 if pattern == "RGGB" else 2)
         if status:
             raise RuntimeError(f"{method}/{pattern} failed: {status}")
@@ -160,8 +161,13 @@ def metrics(reference, output):
     error = difference * difference
     full = int(error.sum(dtype=np.int64))
     inside = error[8:-8, 8:-8]
+    interior = int(inside.sum(dtype=np.int64))
+    border_count = error.size - inside.size
     return {"sse": full, "count": error.size, "psnr": psnr(full, error.size),
-            "interior8_psnr": psnr(int(inside.sum(dtype=np.int64)), inside.size),
+            "interior8_sse": interior, "interior8_count": inside.size,
+            "interior8_psnr": psnr(interior, inside.size),
+            "border8_sse": full - interior, "border8_count": border_count,
+            "border8_psnr": psnr(full - interior, border_count),
             "output_sha256_rgb": hashlib.sha256(output.tobytes()).hexdigest()}
 
 

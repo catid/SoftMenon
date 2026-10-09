@@ -1,6 +1,8 @@
 #pragma once
 
-// Exact, out-of-place replacement for the frozen 3x3 B-G / R-G median pass.
+// Immutable 3x3 B-G / R-G median with measured-color green reconstruction.
+// Preserve measured CFA samples; clamp reconstructed green before adding
+// the other color's median chroma.
 // BGR byte layout; source/destination pitches are independent and in bytes.
 // The caller owns distinct, nonoverlapping source and destination images.
 // This header allocates/copies/synchronizes nothing: one asynchronous launch.
@@ -95,10 +97,14 @@ __device__ __forceinline__ void write_pixel(uint8_t* destination, size_t pitch,
     const bool chromatic_site = (x & 1) == (y & 1);
     const bool measured_red = chromatic_site && (((x & 1) == 0) == rggb);
     const bool measured_blue = chromatic_site && !measured_red;
-    output[0] = measured_blue ? static_cast<uint8_t>(green + low_signed(center))
+    const int original_blue = green + low_signed(center);
+    const int original_red = green + high_signed(center);
+    if (measured_blue) green = saturated(original_blue - low_signed(filtered));
+    if (measured_red) green = saturated(original_red - high_signed(filtered));
+    output[0] = measured_blue ? static_cast<uint8_t>(original_blue)
                              : saturated(green + low_signed(filtered));
     output[1] = static_cast<uint8_t>(green);
-    output[2] = measured_red ? static_cast<uint8_t>(green + high_signed(center))
+    output[2] = measured_red ? static_cast<uint8_t>(original_red)
                             : saturated(green + high_signed(filtered));
 }
 

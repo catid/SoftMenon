@@ -8,15 +8,18 @@
     "One worker was pinned to physical core16. Eight workers were pinned to physical cores16\u201323. Workers include the caller.",
     "The before checkout is ad2eb36; source and binary SHA256 values identify both actual measured builds. No precision or algorithm approximation was applied.",
     "Paths and compiler command arguments are normalized relative to the checkout. historical_observed_library_path records an original machine path only, not a portable input or artifact supplied in this repository.",
-    "Raw timings include Python/ctypes overhead, public wrapper padding/dispatch/final output stores, retained scratch, and synchronous host-to-host processing. No competing benchmark or corpus job was run on the selected cores."
+    "Raw timings include Python/ctypes overhead, public wrapper padding/dispatch/final output stores, retained scratch, and synchronous host-to-host processing. No competing benchmark or corpus job was run on the selected cores.",
+    "After the later SoftMenon quality revision, reproduce this exact-output historical comparison with the pinned paper-after checkout rather than current HEAD."
   ],
   "before_git_revision": "ad2eb36",
   "reproduction": [
     "git worktree add --detach build/paper-before ad2eb36",
+    "git worktree add --detach build/paper-after 1ed157e389a21273d86e7a133e24f5bb99e212f7",
     "build/benchmark-venv/bin/python build/paper-before/benchmark/run.py --build --backends cpu --output build/cpu-before",
-    "build/benchmark-venv/bin/python benchmark/run.py --build --backends cpu --output build/cpu-after",
-    "taskset -c 16-23 build/benchmark-venv/bin/python benchmark/compare_cpu.py --before build/cpu-before/build.json --before-root build/paper-before --after build/cpu-after/build.json --after-root . --check-small --output build/cpu-compare.json",
-    "taskset -c 16-23 build/benchmark-venv/bin/python benchmark/run.py --timing --backends cpu --output build/cpu-after --workers 8 --warmup 10 --rounds 100 --batch 5"
+    "build/benchmark-venv/bin/python build/paper-after/benchmark/run.py --build --backends cpu --output build/cpu-after",
+    "taskset -c 16-23 build/benchmark-venv/bin/python benchmark/compare_cpu.py --before build/cpu-before/build.json --before-root build/paper-before --after build/cpu-after/build.json --after-root build/paper-after --check-small --output build/cpu-compare.json",
+    "ln -s \"$(pwd)/datasets\" build/paper-after/datasets",
+    "taskset -c 16-23 build/benchmark-venv/bin/python build/paper-after/benchmark/run.py --timing --backends cpu --output build/cpu-after --workers 8 --warmup 10 --rounds 100 --batch 5"
   ],
   "original_local_artifacts": {
     "build/paper-cpu-optimization/paired.json": "2f286dfe50dfb65ef51c0e058a0f1c0114118e8f229c6bcf3854e1d5fd15ddb2",
@@ -3647,5 +3650,6 @@
     "all_outputs_verified": true,
     "backend_notes": {},
     "scope": "warm synchronous host-to-host; reusable buffers; CPU padding/dispatch included; GPU pageable transfers, padding, kernels and synchronization included; Python/ctypes overhead included"
-  }
+  },
+  "reproduction_after_git_revision": "1ed157e389a21273d86e7a133e24f5bb99e212f7"
 }

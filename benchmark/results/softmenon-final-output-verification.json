@@ -1,0 +1,137 @@
+{
+  "complete": true,
+  "images": 442,
+  "methods": [
+    "refined_softmenon",
+    "paper"
+  ],
+  "insets": [
+    0,
+    16
+  ],
+  "patterns": [
+    "RGGB",
+    "BGGR"
+  ],
+  "exact_output_hash_matches": {
+    "cpu": 3536,
+    "cuda": 3536
+  },
+  "builds": {
+    "cpu": {
+      "library": "build/softmenon-quality/final-v2/libraries/cpu.so",
+      "library_sha256": "6801f4ece0a08cad8ab85c43fdca8d7093a0d22ea7ad66d56d48d28a368a2a4d",
+      "backend": "cpu",
+      "source_sha256": {
+        "benchmark/bridge_cpu.cpp": "4dc4977208a35dd158f3ff3a03f77174d09b5347c3e791db990c9843a7a0bce8",
+        "cpu/cpu_debayer.cpp": "17971de225f2c7d26223b8efb31da84cfdb34c6e4e18fc325fd49cbb1a0ab578",
+        "cpu/cpu_kernel.cpp": "f319aac7f44b93402acfc4aa15f78e2acfe29a5d553d8f730852b6f97e82198c",
+        "cpu/threadpool.cpp": "ba65f00a02d70c620e480ac63d9282ff83e8d9f3958baac578a6ff4bfbbb06d7",
+        "cpu/chroma_median.hpp": "2afb46481ef7b9a8494d22c7639dd053ed990544c44cf27178ba6911ce408fd4",
+        "cpu/cpu_debayer.hpp": "6470a4de98ba93427b05fe970befc79918af7dc150f5eb4c16f1dded5fb3e703",
+        "cpu/cpu_kernel.hpp": "142dd36d110276a89cfd506ffab7ff4b1146d0cd6cd0d41ebb41f23f09a821c6",
+        "cpu/menon2007_cpu.hpp": "0a678173fafbc9a795e0620f060d80ae935cbe5e3e283a270a0f06781432cca8",
+        "cpu/softmenon_green.hpp": "500c25fed92b397801c27d75e75884b22cf1310dffdd71c530db498a970d9392",
+        "cpu/threadpool.hpp": "6402d84488cc8b3d8e2deb9aa66f0e072457ff588cfc14e4b5d994f6e9f612db",
+        "common/menon2007.hpp": "1e60331990aba67b223f1568ab36178f368a6229d1d48d1de4f1c3e0f812ee0f"
+      },
+      "command": [
+        "g++",
+        "-std=c++17",
+        "-O3",
+        "-shared",
+        "-fPIC",
+        "-fvisibility=hidden",
+        "-pthread",
+        "benchmark/bridge_cpu.cpp",
+        "cpu/cpu_debayer.cpp",
+        "cpu/cpu_kernel.cpp",
+        "cpu/threadpool.cpp",
+        "-o",
+        "build/softmenon-quality/final-v2/libraries/cpu.so"
+      ],
+      "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+    },
+    "cuda": {
+      "library": "build/softmenon-quality/final-v2/libraries/cuda.so",
+      "library_sha256": "1c2fdaf3b823c606fee71190a6403c9e637117cb7392c15a2d797e0fa9798609",
+      "backend": "cuda",
+      "source_sha256": {
+        "benchmark/bridge_cuda.cpp": "d65cd45591d34ca0b24c55ac2572b08e765423c781bcc1785b8c3885f910eb7d",
+        "c/src/debayer.cu": "84a3c3b65aabbb74b54213653f0031939a44b7a7e12ac15a6feb8641f7c6a238",
+        "c/src/debayer_kernel.cu": "a6e867ee2296e64c77174f1fa1b5a2f98f417a228551a08d36589e74c04fc99e",
+        "cpp/src/debayer_cpp.cu": "c93007c060acb012726e21d4249d1cc73effa2e1e1aed6e428a5a503af74efc8",
+        "c/include/debayer.h": "52948b6f3370b00d90800d117c2ab947c170097445c9d36862b0055d80ab620d",
+        "c/src/debayer_kernel.h": "fea0aaa9a901efc57e2c4535efe644576fc379d013bf5fbbe12439783915e2b4",
+        "c/src/chroma_median.cuh": "dc184748649d612b525242432a6c636e56b68c617f53e8dd9fb6bfc35f638fca",
+        "cpp/include/debayer_cpp.h": "bf22de5211aa5ee6068b03ff9035e9936ed8a3ab85f2323cb3100617acfb5b82",
+        "common/menon2007.hpp": "1e60331990aba67b223f1568ab36178f368a6229d1d48d1de4f1c3e0f812ee0f"
+      },
+      "command": [
+        "/usr/local/cuda/bin/nvcc",
+        "-std=c++17",
+        "-O3",
+        "-shared",
+        "-Xcompiler=-fPIC,-fvisibility=hidden",
+        "-lineinfo",
+        "-arch=sm_120",
+        "-Ibuild/softmenon-quality/final-v2/libraries/include",
+        "-Ic/include",
+        "-Icpp/include",
+        "benchmark/bridge_cuda.cpp",
+        "c/src/debayer.cu",
+        "c/src/debayer_kernel.cu",
+        "cpp/src/debayer_cpp.cu",
+        "-o",
+        "build/softmenon-quality/final-v2/libraries/cuda.so"
+      ],
+      "compiler": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Mon_Aug_03_13:24:11_PDT_2026\nCuda compilation tools, release 13.4, V13.4.59\nBuild cuda_13.4.r13.4/compiler.38657139_0\n"
+    }
+  },
+  "checked_files": {
+    "build/softmenon-quality/final-v2/build.json": "081027e5949153c601d07108f07a94557215395b4094683c2f2052b0fe13bd0e",
+    "benchmark/verify_softmenon_outputs.py": "f85fb44bc8be35c010c653fe13ab6f786863fdd4a88e332b6ea9974e9cb1d0a3",
+    "build/softmenon-quality/final-v2/libraries/cpu.so": "6801f4ece0a08cad8ab85c43fdca8d7093a0d22ea7ad66d56d48d28a368a2a4d",
+    "benchmark/bridge_cpu.cpp": "4dc4977208a35dd158f3ff3a03f77174d09b5347c3e791db990c9843a7a0bce8",
+    "cpu/cpu_debayer.cpp": "17971de225f2c7d26223b8efb31da84cfdb34c6e4e18fc325fd49cbb1a0ab578",
+    "cpu/cpu_kernel.cpp": "f319aac7f44b93402acfc4aa15f78e2acfe29a5d553d8f730852b6f97e82198c",
+    "cpu/threadpool.cpp": "ba65f00a02d70c620e480ac63d9282ff83e8d9f3958baac578a6ff4bfbbb06d7",
+    "cpu/chroma_median.hpp": "2afb46481ef7b9a8494d22c7639dd053ed990544c44cf27178ba6911ce408fd4",
+    "cpu/cpu_debayer.hpp": "6470a4de98ba93427b05fe970befc79918af7dc150f5eb4c16f1dded5fb3e703",
+    "cpu/cpu_kernel.hpp": "142dd36d110276a89cfd506ffab7ff4b1146d0cd6cd0d41ebb41f23f09a821c6",
+    "cpu/menon2007_cpu.hpp": "0a678173fafbc9a795e0620f060d80ae935cbe5e3e283a270a0f06781432cca8",
+    "cpu/softmenon_green.hpp": "500c25fed92b397801c27d75e75884b22cf1310dffdd71c530db498a970d9392",
+    "cpu/threadpool.hpp": "6402d84488cc8b3d8e2deb9aa66f0e072457ff588cfc14e4b5d994f6e9f612db",
+    "common/menon2007.hpp": "1e60331990aba67b223f1568ab36178f368a6229d1d48d1de4f1c3e0f812ee0f",
+    "build/softmenon-quality/final-v2/libraries/cuda.so": "1c2fdaf3b823c606fee71190a6403c9e637117cb7392c15a2d797e0fa9798609",
+    "benchmark/bridge_cuda.cpp": "d65cd45591d34ca0b24c55ac2572b08e765423c781bcc1785b8c3885f910eb7d",
+    "c/src/debayer.cu": "84a3c3b65aabbb74b54213653f0031939a44b7a7e12ac15a6feb8641f7c6a238",
+    "c/src/debayer_kernel.cu": "a6e867ee2296e64c77174f1fa1b5a2f98f417a228551a08d36589e74c04fc99e",
+    "cpp/src/debayer_cpp.cu": "c93007c060acb012726e21d4249d1cc73effa2e1e1aed6e428a5a503af74efc8",
+    "c/include/debayer.h": "52948b6f3370b00d90800d117c2ab947c170097445c9d36862b0055d80ab620d",
+    "c/src/debayer_kernel.h": "fea0aaa9a901efc57e2c4535efe644576fc379d013bf5fbbe12439783915e2b4",
+    "c/src/chroma_median.cuh": "dc184748649d612b525242432a6c636e56b68c617f53e8dd9fb6bfc35f638fca",
+    "cpp/include/debayer_cpp.h": "bf22de5211aa5ee6068b03ff9035e9936ed8a3ab85f2323cb3100617acfb5b82",
+    "benchmark/results/softmenon-quality.jsonl.gz": "8fdf2252716dd42593f44bc572c8fb3b37fdff253bf5d64382d7011b5358bb27",
+    "benchmark/results/softmenon-quality.jsonl.meta.json": "c382b5e02ce52c4b1a4e1ffc1776c9679a7e8c5136d889fdbd9daf4d3c8a2b38",
+    "benchmark/datasets.json": "aa364cbc36ffb7914422880f8477c74f191d796b64f3a9dc65156c9f0eb1838c",
+    "benchmark/run.py": "8f8fa38a9902731bc56d8c35370555d6db02a775f4258748771589b69f9f0134"
+  },
+  "rows_sha256": "8fdf2252716dd42593f44bc572c8fb3b37fdff253bf5d64382d7011b5358bb27",
+  "rows_metadata_sha256": "c382b5e02ce52c4b1a4e1ffc1776c9679a7e8c5136d889fdbd9daf4d3c8a2b38",
+  "script_sha256": "f85fb44bc8be35c010c653fe13ab6f786863fdd4a88e332b6ea9974e9cb1d0a3",
+  "elapsed_seconds": 27.967399835586548,
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "workers": 8,
+  "cuda_visible_devices": "0",
+  "scope": "Full corpus output identity only. This is not a new quality estimate or inference benchmark."
+}

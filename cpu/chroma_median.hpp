@@ -6,7 +6,9 @@
 // 0: insertion reference. 1: fixed scalar network. 2: runtime-selected SIMD
 // network (AVX512BW+VBMI, AVX2, then scalar fallback), with scalar borders/tails.
 // swap_output exchanges the final B/R channels; CFA masking always describes
-// the SOURCE image. Green and the source's measured CFA channel are preserved.
+// the SOURCE image. Every measured CFA sample is preserved. At red/blue
+// sites, green is reconstructed from the measured color minus its median
+// chroma; the other color uses this clipped green plus its own median chroma.
 
 #include <algorithm>
 #include <array>
@@ -92,10 +94,12 @@ inline void scalar_pixel(const uint8_t* source, size_t source_pitch,
     const bool chromatic=(x&1)==(y&1);
     const bool measured_red=chromatic && (((x&1)==0)==rggb);
     const bool measured_blue=chromatic && !measured_red;
-    const uint8_t out_b=measured_blue ? center[0] : saturated(center[1]+b);
-    const uint8_t out_r=measured_red ? center[2] : saturated(center[1]+r);
+    const int green=measured_blue ? saturated(center[0]-b) :
+        (measured_red ? saturated(center[2]-r) : center[1]);
+    const uint8_t out_b=measured_blue ? center[0] : saturated(green+b);
+    const uint8_t out_r=measured_red ? center[2] : saturated(green+r);
     output[0]=swap_output ? out_r : out_b;
-    output[1]=center[1];
+    output[1]=static_cast<uint8_t>(green);
     output[2]=swap_output ? out_b : out_r;
 }
 
@@ -166,8 +170,6 @@ MEDIAN_CPU_AVX2_TARGET inline void avx2_rows(const uint8_t* source,size_t source
         bool rggb,int begin_y,int end_y,bool swap_output) {
     const __m128i scatter_first=_mm_setr_epi8(0,-128,1,2,-128,3,4,-128,5,6,-128,7,8,-128,9,10);
     const __m128i scatter_second=_mm_setr_epi8(5,6,-128,7,8,-128,9,10,-128,11,12,-128,13,14,-128,15);
-    const __m128i green_first=_mm_setr_epi8(0,-1,0,0,-1,0,0,-1,0,0,-1,0,0,-1,0,0);
-    const __m128i green_second=_mm_setr_epi8(0,0,-1,0,0,-1,0,0,-1,0,0,-1,0,0,-1,0);
     const __m128i swap_pairs=_mm_setr_epi8(1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14);
     for (int y=begin_y;y<end_y;++y) {
         if (y==0 || y==height-1 || width<10) {
@@ -199,17 +201,27 @@ MEDIAN_CPU_AVX2_TARGET inline void avx2_rows(const uint8_t* source,size_t source
                 values[(dy+1)*3+2]=right.differences;
                 if (dy==0) center_green=center.green;
             }
-            const __m256i filtered=_mm256_add_epi16(center_green,median9(values[0],values[1],values[2],
-                values[3],values[4],values[5],values[6],values[7],values[8]));
+            const __m256i med=median9(values[0],values[1],values[2],
+                values[3],values[4],values[5],values[6],values[7],values[8]);
             const __m256i original=_mm256_add_epi16(center_green,values[4]);
+            const __m256i delta=_mm256_and_si256(measured,_mm256_sub_epi16(original,med));
+            // Shuffle both halves in sequence; disjoint measured lanes avoid
+            // addition/cross-channel interference when duplicating each pair.
+            const __m256i duplicated=_mm256_or_si256(delta,
+                _mm256_shufflehi_epi16(_mm256_shufflelo_epi16(delta,0xb1),0xb1));
+            const __m256i masks=_mm256_or_si256(measured,
+                _mm256_shufflehi_epi16(_mm256_shufflelo_epi16(measured,0xb1),0xb1));
+            const __m256i green=_mm256_min_epi16(_mm256_max_epi16(
+                _mm256_blendv_epi8(center_green,duplicated,masks),_mm256_setzero_si256()),_mm256_set1_epi16(255));
+            const __m256i filtered=_mm256_add_epi16(green,med);
             __m128i colors=clipped_bytes(_mm256_blendv_epi8(filtered,original,measured));
             if (swap_output) colors=_mm_shuffle_epi8(colors,swap_pairs);
-            const uint8_t* input=source+static_cast<size_t>(y)*source_pitch+static_cast<size_t>(x)*3;
             uint8_t* output=destination+static_cast<size_t>(y)*destination_pitch+static_cast<size_t>(x)*3;
+            const __m128i greens=clipped_bytes(green);
             const __m128i first=_mm_or_si128(_mm_shuffle_epi8(colors,scatter_first),
-                _mm_and_si128(_mm_loadu_si128(reinterpret_cast<const __m128i*>(input)),green_first));
+                _mm_shuffle_epi8(greens,_mm_setr_epi8(-128,0,-128,-128,2,-128,-128,4,-128,-128,6,-128,-128,8,-128,-128)));
             const __m128i second=_mm_or_si128(_mm_shuffle_epi8(colors,scatter_second),
-                _mm_and_si128(_mm_loadu_si128(reinterpret_cast<const __m128i*>(input+8)),green_second));
+                _mm_shuffle_epi8(greens,_mm_setr_epi8(-128,-128,6,-128,-128,8,-128,-128,10,-128,-128,12,-128,-128,14,-128)));
             // The stores overlap only within this vector's 24 output bytes;
             // the overlapping bytes agree. Adjacent vectors/rows never overlap.
             _mm_storeu_si128(reinterpret_cast<__m128i*>(output),first);
@@ -269,11 +281,6 @@ MEDIAN_CPU_AVX512_TARGET inline void avx512_rows(const uint8_t* source,size_t so
         for (int i=0;i<48;++i) index[i]=2*(i/3)+(i%3==2);
         return index;
     }();
-    alignas(64) static constexpr auto green_index=[] {
-        std::array<uint8_t,64> index{};
-        for (int i=0;i<48;++i) index[i]=i+3;
-        return index;
-    }();
     constexpr __mmask64 green_mask=[] {
         uint64_t mask=0;
         for (int i=1;i<48;i+=3) mask|=uint64_t{1}<<i;
@@ -281,7 +288,6 @@ MEDIAN_CPU_AVX512_TARGET inline void avx512_rows(const uint8_t* source,size_t so
     }();
     __m512i scatter=_mm512_load_si512(scatter_index.data());
     if (swap_output) scatter=_mm512_xor_si512(scatter,_mm512_set1_epi8(1));
-    const __m512i green_scatter=_mm512_load_si512(green_index.data());
     for (int y=begin_y;y<end_y;++y) {
         if (y==0 || y==height-1 || width<18) {
             for (int x=0;x<width;++x)
@@ -292,7 +298,7 @@ MEDIAN_CPU_AVX512_TARGET inline void avx512_rows(const uint8_t* source,size_t so
         const __mmask32 measured=0x11111111u*((y&1) ? (rggb ? 1u : 2u) : (rggb ? 8u : 4u));
         int x=1;
         for (;x<=width-17;x+=16) {
-            __m512i values[9],center_green=_mm512_setzero_si512(),center_row=_mm512_setzero_si512();
+            __m512i values[9],center_green=_mm512_setzero_si512();
             for (int dy=-1;dy<=1;++dy) {
                 const uint8_t* input=source+static_cast<size_t>(y+dy)*source_pitch+static_cast<size_t>(x-1)*3;
                 const __m512i row=_mm512_maskz_loadu_epi8((uint64_t{1}<<54)-1,input);
@@ -302,16 +308,23 @@ MEDIAN_CPU_AVX512_TARGET inline void avx512_rows(const uint8_t* source,size_t so
                 values[(dy+1)*3]=left.differences;
                 values[(dy+1)*3+1]=center.differences;
                 values[(dy+1)*3+2]=right.differences;
-                if (dy==0) { center_green=center.green; center_row=row; }
+                if (dy==0) center_green=center.green;
             }
-            const __m512i filtered=_mm512_add_epi16(center_green,median9(values[0],values[1],values[2],
-                values[3],values[4],values[5],values[6],values[7],values[8]));
+            const __m512i med=median9(values[0],values[1],values[2],
+                values[3],values[4],values[5],values[6],values[7],values[8]);
             const __m512i original=_mm512_add_epi16(center_green,values[4]);
+            const __m512i delta=_mm512_maskz_sub_epi16(measured,original,med);
+            const __m512i paired=_mm512_or_si512(delta,
+                _mm512_shufflehi_epi16(_mm512_shufflelo_epi16(delta,0xb1),0xb1));
+            const __mmask32 chromatic=measured|((measured&0x55555555u)<<1)|((measured&0xaaaaaaaau)>>1);
+            const __m512i green=_mm512_min_epi16(_mm512_max_epi16(
+                _mm512_mask_mov_epi16(center_green,chromatic,paired),_mm512_setzero_si512()),_mm512_set1_epi16(255));
+            const __m512i filtered=_mm512_add_epi16(green,med);
             const __m512i colors=_mm512_mask_mov_epi16(filtered,measured,original);
             const __m512i clipped=_mm512_min_epi16(_mm512_max_epi16(colors,_mm512_setzero_si512()),_mm512_set1_epi16(255));
             const __m512i bytes=_mm512_castsi256_si512(_mm512_cvtepi16_epi8(clipped));
             const __m512i output=_mm512_mask_mov_epi8(_mm512_permutexvar_epi8(scatter,bytes),green_mask,
-                _mm512_permutexvar_epi8(green_scatter,center_row));
+                _mm512_permutexvar_epi8(scatter,_mm512_castsi256_si512(_mm512_cvtepi16_epi8(green))));
             // Masked stores touch exactly this vector's 16 BGR pixels.
             _mm512_mask_storeu_epi8(destination+static_cast<size_t>(y)*destination_pitch+static_cast<size_t>(x)*3,
                 (uint64_t{1}<<48)-1,output);

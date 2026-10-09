@@ -485,11 +485,19 @@ void bggr_menon2007_g_cpu(const uint8_t* raw,int raw_pitch,uint8_t* bgr,
     bggr_legacy_g_impl<false>(raw,raw_pitch,bgr,bgr_pitch,width,height);
 }
 
+#include "softmenon_green.hpp"
+
 void bggr_softmenon_g_cpu(const uint8_t* raw,int raw_pitch,uint8_t* bgr,
     int bgr_pitch,int width,int height) {
 #if CPU_SOFT_AVX2
+    if (width>=32 && __builtin_cpu_supports("avx512f") && __builtin_cpu_supports("avx512bw") &&
+        __builtin_cpu_supports("avx512vl") && __builtin_cpu_supports("avx512vbmi")) {
+        soft_green_avx512(raw,raw_pitch,bgr,bgr_pitch,width,height);
+        return;
+    }
     if (width>=16 && __builtin_cpu_supports("avx2")) {
-        soft_green_avx2(raw,raw_pitch,bgr,bgr_pitch,width,height);
+        if (width>=32) soft_green_chromatic_avx2(raw,raw_pitch,bgr,bgr_pitch,width,height);
+        else soft_green_avx2(raw,raw_pitch,bgr,bgr_pitch,width,height);
         return;
     }
 #endif

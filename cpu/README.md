@@ -35,8 +35,9 @@ This CPU implementation accepts 8-bit RGGB and BGGR images with width and height
 at least two, including odd dimensions. Choose `SARONIC_DEBAYER_BILINEAR`,
 `SARONIC_DEBAYER_MALVAR2004`, `SARONIC_DEBAYER_MENON2007`, or
 `SARONIC_DEBAYER_SOFTMENON`. Menon implements DDFAPD with full paper refinement;
-SoftMenon retains the custom interpolation with soft green decisions and a
-sample-preserving median of color differences. Output channels are BGR. Row
+SoftMenon uses soft green decisions and a median of color differences to refine
+missing green and red/blue values while preserving every measured CFA sample.
+Output channels are BGR. Row
 pitches are byte counts; zero means tightly packed, otherwise each pitch must
 cover its complete image row.
 The caller owns the input and output buffers and must allocate enough storage
@@ -78,6 +79,12 @@ random and extreme images, tile boundaries, strides and guards, worker counts,
 algorithm switches, and scalar/AVX2/AVX512 paths available on the host. Direct
 kernel checks also process arbitrary row slices in reverse order and verify
 that rows outside each slice remain untouched.
+
+`cpu_softmenon_reference` checks the fused green/color refinement against an
+independent `std::sort` median interpretation. It covers measured-sample
+preservation, clipping before color reconstruction, arbitrary RGB cleanup
+inputs, both Bayer phases, worker counts, strided buffers, and direct scalar,
+AVX2 and AVX512 cleanup paths.
 
 Run the core tests with AddressSanitizer and UndefinedBehaviorSanitizer:
 

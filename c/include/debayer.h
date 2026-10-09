@@ -37,8 +37,9 @@ cudaError_t debayer_bggr2bgr_bilinear(cudaStream_t stream, int32_t width, int32_
 cudaError_t debayer_rggb2bgr_menon2007(cudaStream_t stream, int32_t width, int32_t height, size_t input_pitch, size_t output_pitch, uint8_t* input_data, uint8_t* output_data);
 cudaError_t debayer_bggr2bgr_menon2007(cudaStream_t stream, int32_t width, int32_t height, size_t input_pitch, size_t output_pitch, uint8_t* input_data, uint8_t* output_data);
 
-/* Menon is the complete DDFAPD baseline, including refinement. SoftMenon retains
- * the project's integer reconstruction with soft green and chroma cleanup.
+/* Menon is the complete DDFAPD baseline, including refinement. SoftMenon uses
+ * soft green decisions and chroma medians to refine missing green and colors,
+ * preserving every measured CFA sample.
  * Convenience entry points allocate stream-ordered scratch. For repeated
  * frames, use the workspace forms below with reusable, nonoverlapping storage.
  */

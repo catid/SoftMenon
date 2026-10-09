@@ -10,15 +10,14 @@ and API names are retained.
 - **Bilinear** — simple local interpolation.
 - **Malvar 2004** — fixed cross-channel correction filters.
 - **Menon 2007** — full paper DDFAPD, including refinement.
-- **SoftMenon (initial version)** — the earlier custom reconstruction with soft
-  green decisions and a sample-preserving 3×3 median of R−G and B−G.
+- **SoftMenon** — soft green decisions followed by a 3×3 chroma-median
+  refinement of missing green and red/blue, preserving every measured sample.
 
-SoftMenon improves its custom parent by **0.603 dB**. Full paper Menon has
-**0.317 dB higher mean PSNR** than this initial version. A new ten-factor sweep
-from paper Menon found **+0.458 dB** from soft initial green alone; conservative
-close-score averaging gained **+0.296 dB** and improved 441/442 scenes. These
-paper-based candidates remain experimental; [benchmarks.md](benchmarks.md)
-reports every result, including regressions and reproduction details.
+The revised SoftMenon scores **0.564 dB above full paper Menon** and
+**0.881 dB above initial SoftMenon** on our 442-image benchmark. It improves
+mean quality on all five datasets versus paper Menon, with wins on 377/442
+scenes; some scenes still favor Menon. [benchmarks.md](benchmarks.md) reports
+the selection process, regressions, raw results, and reproduction instructions.
 
 ## Measured comparison
 
@@ -30,41 +29,47 @@ included. These are workstation results, not Jetson measurements.
 
 | Method | PSNR dB | CPU ms | CUDA ms |
 |---|---:|---:|---:|
-| Bilinear | 28.914 | 0.281 | 0.351 |
-| Malvar 2004 | 33.963 | 0.641 | 0.350 |
-| Menon 2007, full paper | **36.928** | **1.200** | 0.539 |
-| SoftMenon, initial version | 36.612 | 0.524 | 0.366 |
-| Legacy custom Menon control | 36.009 | 1.020 | 0.356 |
-| Legacy + soft green only | 36.379 | 0.393 | 0.357 |
+| Bilinear | 28.914 | 0.278 | 0.353 |
+| Malvar 2004 | 33.963 | 0.638 | 0.352 |
+| Menon 2007, full paper | 36.928 | 1.204 | 0.541 |
+| SoftMenon | **37.493** | **0.469** | 0.368 |
+| Legacy custom Menon control | 36.009 | 1.014 | 0.358 |
+| Legacy + soft green only | 36.379 | 0.322 | 0.359 |
 | OpenCV bilinear | 28.914 | 0.310 | — |
 | OpenCV edge-aware | 28.927 | 0.328 | — |
 | OpenCV VNG, registration corrected | 33.509 | 6.748 | — |
 | NPP CFA reconstruction | 29.103 | — | 0.406 |
 
-Paper Menon's CPU optimization preserves every output byte. A separate
-interleaved before/after test measured **16.019 → 1.268 ms (12.63× faster)**
-with eight workers and **120.957 → 8.334 ms (14.51×)** with one worker.
-The table uses a fresh all-method CPU run; CUDA and external adapter timings
-are retained from the preceding baseline run on the same workstation.
+In the matched initial-versus-current SoftMenon test, CPU latency improves
+**0.539 → 0.497 ms** with eight workers and **3.251 → 2.774 ms** with one.
+CUDA is unchanged at **0.367 ms**; forced AVX2 dispatch is also effectively flat.
+The quality improvement reuses existing medians, while AVX2/AVX512 green
+optimizations remove calculations at already measured green sites.
 
-The initial SoftMenon CPU path is **18% faster than our Malvar implementation**
-in the table's run. Dataset splits, hashes, decoder rules, baseline validation, timing
+The table uses a separate fresh all-method CPU/CUDA run; external adapter
+timings are retained from the earlier run on the same workstation. Paper
+Menon's earlier exact CPU optimization reduced its latency by 12.63×.
+Dataset splits, hashes, decoder rules, baseline validation, timing
 scope, external adapter details, all ablation results, and reproduction commands
 are in [benchmarks.md](benchmarks.md). Historical blue-only PSNR figures have
 been withdrawn; these scores include all three channels.
 
 ## Examples
 
+Look closely at the boat's ropes and rigging: the lower-quality reconstructions
+show false-color fringes along these fine lines. Open the images at full size
+to compare the artifacts.
+
 Kodak `kodim11`, BGGR; individual full-image PSNR:
 
 | Bilinear: 28.761 dB | Malvar: 34.366 dB |
 |---|---|
 | ![Bilinear](bilinear.out.png) | ![Malvar](malvar2004.out.png) |
-| **Paper Menon: 39.102 dB** | **Initial SoftMenon: 38.190 dB** |
+| **Paper Menon: 39.102 dB** | **SoftMenon: 39.511 dB** |
 | ![Menon](menon2007.out.png) | ![SoftMenon](softmenon.out.png) |
 
 Kodak `kodim19`, BGGR: [paper Menon, 39.918 dB](menon2007.lighthouse.png)
-and [initial SoftMenon, 38.965 dB](softmenon.lighthouse.png).
+and [SoftMenon, 40.254 dB](softmenon.lighthouse.png).
 Images courtesy of Kodak / [Rich Franzen's collection](https://r0k.us/graphics/kodak/).
 
 ## Build and use

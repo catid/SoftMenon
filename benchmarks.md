@@ -8,6 +8,11 @@ paper implementation had higher mean PSNR. We therefore started a fresh set of
 one-factor experiments from the full paper implementation. Historical gains must
 not be attributed to that stronger baseline.
 
+The current SoftMenon adds a separate improvement to the fast custom pipeline:
+its existing chroma medians also reconstruct missing green before the missing
+red/blue values. The section on that revision below separates its quality and
+timing results from the initial version and the paper-based experiments.
+
 ## Reconstruct the exact dataset
 
 Run from the repository root. Python 3.12 was used. The downloader uses only the
@@ -134,6 +139,10 @@ PSNR deltas are labeled as such, while MSE and win/loss counts retain every case
 - **Initial SoftMenon:** legacy interpolation plus soft initial green blending
   and one sample-preserving 3-by-3 chroma median. This was the winner of the
   legacy-based experiment. Paper-based ablations are a separate experiment.
+- **Current SoftMenon:** the same initial reconstruction and median estimates,
+  also used to refine missing green from the measured red/blue sample. It
+  preserves measured green and all other CFA observations, while interpolated
+  green can change. The paper Menon baseline remains unchanged.
 
 The full paper reference is defined in
 [common/menon2007.hpp](common/menon2007.hpp), which the CUDA backend executes
@@ -229,9 +238,9 @@ Quality JSON additionally records NumPy, Pillow, and JPEG versions; the complete
 runner commands are given above.
 Paper Menon uses a tiled CPU implementation with cached directional gradients
 and runtime SIMD dispatch. Its optimization and matched before/after experiment
-are described below. Initial SoftMenon has separate SIMD kernels.
+are described below. SoftMenon has separate SIMD kernels.
 
-Examples use Kodak `kodim11.png` (the existing building scene) and `kodim19.png`
+Examples use Kodak `kodim11.png` (boat and harbor) and `kodim19.png`
 (lighthouse), BGGR. Captions must use those individual full-image PSNR values,
 not the Kodak mean or interior-only scores.
 
@@ -304,18 +313,21 @@ GCC 13.3, Clang 18.1.3, and AddressSanitizer/UndefinedBehaviorSanitizer. The fin
 test inputs are deterministic across compilers. Counts, commands and hashes
 are recorded in [paper-cpu-exactness.json](benchmark/results/paper-cpu-exactness.json).
 
-To recreate the before/after experiment, download the dataset above, then build
-the pinned old checkout and the current checkout separately:
+To recreate this historical before/after experiment, download the dataset
+above, then build both pinned checkouts separately. The later SoftMenon revision
+intentionally changes its output, so current HEAD cannot serve as the unchanged
+SoftMenon control in this earlier optimization experiment.
 
 ```bash
 git worktree add --detach build/paper-before ad2eb3642e0212473cdefd591078380c6a1c4508
+git worktree add --detach build/paper-after 1ed157e389a21273d86e7a133e24f5bb99e212f7
 build/benchmark-venv/bin/python build/paper-before/benchmark/run.py \
   --build --backends cpu --output build/cpu-before
-build/benchmark-venv/bin/python benchmark/run.py \
+build/benchmark-venv/bin/python build/paper-after/benchmark/run.py \
   --build --backends cpu --output build/cpu-after
 taskset -c 16-23 build/benchmark-venv/bin/python benchmark/compare_cpu.py \
   --before build/cpu-before/build.json --before-root build/paper-before \
-  --after build/cpu-after/build.json --after-root . \
+  --after build/cpu-after/build.json --after-root build/paper-after \
   --output build/cpu-compare.json --check-small
 ```
 
@@ -332,9 +344,10 @@ hash. Run it from both checkouts, sharing the downloaded images:
 
 ```bash
 ln -s "$(pwd)/datasets" build/paper-before/datasets
+ln -s "$(pwd)/datasets" build/paper-after/datasets
 build/benchmark-venv/bin/python build/paper-before/benchmark/run.py \
   --backends cpu --output build/cpu-before --quality --insets 0 16 --workers 8
-build/benchmark-venv/bin/python benchmark/run.py \
+build/benchmark-venv/bin/python build/paper-after/benchmark/run.py \
   --backends cpu --output build/cpu-after --quality --insets 0 16 --workers 8
 ```
 
@@ -342,6 +355,194 @@ Match quality rows by `(method, path, inset, pattern)` and compare their
 `output_sha256_rgb` fields and integer SSE totals. The independent C++ reference
 test described in [cpu/README.md](cpu/README.md) additionally exercises synthetic
 edge cases and every supported CPU instruction path without downloading data.
+
+## Current SoftMenon: reuse chroma medians to refine green
+
+The initial version left every green estimate unchanged during cleanup. The
+current version uses the same two median color differences to reconstruct
+missing green from the color actually measured at that pixel, then reconstructs
+the other missing color. This adds no filter pass, neighborhood loads, scratch
+image, or median sorting network. It changes the algorithm's output; the SIMD
+improvements to its initial green stage are separately byte-exact optimizations.
+Full paper Menon remains the same independent baseline.
+
+Let `I` be the immutable, completed initial SoftMenon image before cleanup:
+
+```text
+mR = median_3x3(I.R - I.G)
+mB = median_3x3(I.B - I.G)
+
+At a measured R: Gnew = clip(Rmeasured - mR)
+At a measured B: Gnew = clip(Bmeasured - mB)
+At a measured G: Gnew = Gmeasured
+
+Rnew = Rmeasured if R was measured, otherwise clip(Gnew + mR)
+Bnew = Bmeasured if B was measured, otherwise clip(Gnew + mB)
+```
+
+All medians use reflect101 on the unchanged precleanup image. Clip green to
+uint8 **before** adding the other color difference. Measured CFA values remain
+exact; interpolated green can change. This extends the same locally smooth
+color-difference assumption that motivated the initial chroma median. It does
+not add the paper Menon refinement stages or change the green classifier.
+
+### Selection and quality
+
+We screened eight predefined final-pass choices, including the unchanged
+initial version, on 40 images: eight evenly spaced filenames from each dataset.
+We then ran all eight over the full original 442-image corpus. Independently,
+26 green/classifier and red/blue/median changes were screened on 31 stratified
+images with original and Inset16 cohorts. Their definitions and all summary
+results are retained in
+[softmenon-exploratory-screen.json](benchmark/results/softmenon-exploratory-screen.json).
+The full median-based green reconstruction was selected for its quality and
+reuse of existing work; no other quality candidate was combined with it.
+
+For the final-pass alternatives, define `delta = measured_C - median(C-G) - G`
+at measured red/blue sites and zero at measured green. The selected variant
+applies this full delta to green, clips it, and uses that green to reconstruct
+the missing color. The other choices isolate correction strength or color
+coupling:
+
+| Final-pass choice | Original mean PSNR dB |
+|---|---:|
+| Initial SoftMenon, green unchanged | 36.6116 |
+| Full delta, reconstruct missing color from new green — **selected** | **37.4928** |
+| Half delta, reconstruct missing color from new green | 37.1850 |
+| Quarter delta, reconstruct missing color from new green | 36.9197 |
+| Full delta to green only; colors retain old green anchor | 37.0389 |
+| Half delta to green only; colors retain old green anchor | 36.8981 |
+| Clamp delta to ±8 DN | 37.3898 |
+| Apply delta only when its magnitude is at most 16 DN | 37.3516 |
+
+Half and quarter corrections use nearest-integer rounding, with ties toward
+positive infinity. Although the ±8 choice narrowly led the 40-image screen,
+full correction won on the full corpus and avoids a fitted strength threshold.
+The screen and full evaluation reuse scenes; these are exploratory results,
+not a held-out estimate after candidate selection.
+
+| Dataset | Initial SoftMenon | Full paper Menon | Current SoftMenon | Current − paper |
+|---|---:|---:|---:|---:|
+| Kodak24 | 38.5976 | 39.2055 | **39.5499** | +0.3443 |
+| McMaster | 34.8191 | 34.2268 | 34.4812 | +0.2544 |
+| Urban100 | 33.2525 | 33.6647 | **33.9078** | +0.2431 |
+| DIV2K validation | 38.3451 | 38.3940 | **38.7985** | +0.4045 |
+| BSDS500 test | 37.3475 | 37.7975 | **38.6566** | +0.8591 |
+| All 442, original | 36.6116 | 36.9285 | **37.4928** | **+0.5643** |
+| All 442, Inset16 | 36.4781 | 36.7859 | **37.3762** | **+0.5903** |
+
+Against paper Menon, original mean PSNR improves **0.5643 dB**, with a pointwise
+95% bootstrap interval of **[+0.4984, +0.6225] dB**. Original pooled PSNR improves
+0.4294 dB; interior8 mean improves 0.5803 dB and border8 mean improves 0.4933 dB.
+The advantage is therefore not confined to a border or one aggregation rule.
+Bootstrapping uses 10,000 dataset-stratified source-image resamples, retaining
+the two phases together, seed 20261010. Intervals are not adjusted for selection.
+
+Current SoftMenon wins on 377 scenes and loses on 65 versus paper Menon, after
+averaging phases per scene. Its worst original loss is Urban100
+`img_011_SRF_2_HR.png`, **−7.6304 dB** (37.8043 versus 45.4347 dB); the Inset16
+loss is −2.1966 dB. This improves that scene over initial SoftMenon's 36.6381 dB,
+but does not fix its difficult structure. Against initial SoftMenon, the overall
+gain is 0.8811 dB, with 357 wins and 85 losses; McMaster's mean falls 0.3379 dB.
+The result is a higher average, not a per-image dominance guarantee.
+
+The selected evaluation has 5,304 scored rows: 442 images × two cohorts × two
+phases × three methods. All 1,768 current CPU/CUDA outputs match byte for byte;
+all measured CFA samples are preserved. Old initial/paper hashes match 1,768
+historical original outputs, and the selected original outputs match 884
+independently postprocessed reference hashes. Per-channel integer errors,
+output hashes, all regional scores and decoder/build provenance are checked in:
+
+- [Per-image results](benchmark/results/softmenon-quality.jsonl.gz) and
+  [metadata](benchmark/results/softmenon-quality.jsonl.meta.json).
+- [Aggregates, confidence intervals and worst scenes](benchmark/results/softmenon-quality-summary.json).
+- [Independent NumPy, sorted-median, SIMD and sanitizer checks](benchmark/results/softmenon-quality-exactness.json).
+
+The final AVX2 speed improvement was applied after scoring. A separate
+[final-binary verification](benchmark/results/softmenon-final-output-verification.json)
+matched all current SoftMenon and unchanged paper outputs to the recorded
+hashes: 3,536 outputs per backend, 7,072 matches total. This connects the scored
+results to the final binaries without attributing a quality change to SIMD.
+
+### Speed and implementation checks
+
+Matched 1080p before/after latency, mean of RGGB/BGGR medians, on the same
+workstation and input described above:
+
+| Path | Initial SoftMenon ms | Current SoftMenon ms |
+|---|---:|---:|
+| CPU, 8 workers, native AVX512 dispatch | 0.539025 | **0.496665** |
+| CPU, 1 worker, native AVX512 dispatch | 3.250918 | **2.774459** |
+| CPU, 8 workers, forced AVX2 dispatch | 0.792369 | 0.791920 |
+| CPU, 1 worker, forced AVX2 dispatch | 5.316409 | 5.260995 |
+| CUDA, synchronous host-to-host | 0.366902 | 0.366876 |
+
+Eight-worker native CPU latency falls 7.9%; CUDA and forced AVX2 are effectively
+unchanged. The tiny CUDA/AVX2 differences are not claimed as speedups. Native
+CPU Malvar controls differ by less than 0.1% and paper controls by less than
+0.7%; CUDA controls differ by less than 0.2%. Forced-AVX2 paper controls drift
+about 2%, reinforcing that its sub-percent changes are timing variation.
+The AVX2 experiment forces dispatch on the same Threadripper, not a different
+AVX2-only processor. ARM CPU and Jetson runtime performance remain unmeasured.
+
+The new green kernels compute estimates only at red/blue sites, retaining every
+original candidate, score, blend, rounding and clipping result. AVX512 handles
+16 chromatic sites per 32-pixel strip; AVX2 extracts the same sites from packed
+byte pairs. Both retain the existing fallback for vector tails. The cleanup
+reuses its two signed chroma medians to refine green in the same output pass.
+GPU cleanup retains the packed median network and one launch.
+
+GCC, Clang and ASan/UBSan pass all three CPU CTests, including an independent
+sorted-median reference with 600 public API outputs and 1,600 direct cleanup
+outputs. Forced AVX2 initial reconstruction matches its frozen predecessor on
+288 comparisons spanning 67.4 million pixels. CUDA passes 192 regression cases
+and 160 cases each under compute-sanitizer memcheck and initcheck, with zero
+errors. SM87 and SM120 compile; runtime tests use SM120.
+
+[softmenon-performance.json](benchmark/results/softmenon-performance.json)
+contains the raw paired latency samples and the separate all-method table run,
+build/source hashes and reproduction commands. To reproduce forced AVX2,
+[build_forced_avx2.py](benchmark/build_forced_avx2.py) copies each checkout and
+replaces only its AVX512 feature predicates with `false`; it records all source
+transformations. Use the resulting build manifests with the same paired runner.
+
+### Reproduce this revision
+
+Use the dataset reconstruction instructions above. The baseline commit is the
+last version with initial SoftMenon and already optimized paper Menon:
+
+```bash
+git worktree add --detach build/soft-before 1ed157e389a21273d86e7a133e24f5bb99e212f7
+build/benchmark-venv/bin/python build/soft-before/benchmark/run.py \
+  --build --backends cpu cuda --output build/soft-before-build --cuda-arch sm_120
+build/benchmark-venv/bin/python benchmark/run.py \
+  --build --backends cpu cuda --output build/soft-after-build --cuda-arch sm_120
+
+CUDA_VISIBLE_DEVICES=0 taskset -c 16-23 \
+  build/benchmark-venv/bin/python benchmark/compare_softmenon_quality.py \
+  --baseline build/soft-before-build/build.json --baseline-source-root build/soft-before \
+  --candidate build/soft-after-build/build.json --workers 8 \
+  --output build/soft-quality.jsonl.gz
+build/benchmark-venv/bin/python benchmark/summarize_softmenon_quality.py \
+  build/soft-quality.jsonl.gz --output build/soft-quality-summary.json
+
+taskset -c 16-23 build/benchmark-venv/bin/python benchmark/compare_softmenon.py \
+  --old-build build/soft-before-build/build.json --old-root build/soft-before \
+  --candidate-build build/soft-after-build/build.json --candidate-root . \
+  --backend cpu --workers 1 8 --output build/soft-timing-cpu.json
+CUDA_VISIBLE_DEVICES=0 taskset -c 16-23 \
+  build/benchmark-venv/bin/python benchmark/compare_softmenon.py \
+  --old-build build/soft-before-build/build.json --old-root build/soft-before \
+  --candidate-build build/soft-after-build/build.json --candidate-root . \
+  --backend cuda --output build/soft-timing-cuda.json
+```
+
+The quality comparison requires CPU and CUDA so it can verify exact pairing.
+CPU-only production scoring remains available through `benchmark/run.py
+--quality --backends cpu`. Timings randomly interleave old/new SoftMenon and
+unchanged Malvar/paper controls, with ten warmup rounds and 100 rounds of five
+calls per lane, both phases. Only SoftMenon may change output; controls must
+match, all timed outputs must repeat, and every measured sample must survive.
 
 ## How the first candidates were selected
 

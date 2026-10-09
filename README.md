@@ -30,20 +30,25 @@ included. These are workstation results, not Jetson measurements.
 
 | Method | PSNR dB | CPU ms | CUDA ms |
 |---|---:|---:|---:|
-| Bilinear | 28.914 | 0.298 | 0.351 |
-| Malvar 2004 | 33.963 | 0.661 | 0.350 |
-| Menon 2007, full paper | **36.928** | 15.947 | 0.539 |
-| SoftMenon, initial version | 36.612 | **0.542** | 0.366 |
-| Legacy custom Menon control | 36.009 | 1.034 | 0.356 |
-| Legacy + soft green only | 36.379 | 0.413 | 0.357 |
+| Bilinear | 28.914 | 0.281 | 0.351 |
+| Malvar 2004 | 33.963 | 0.641 | 0.350 |
+| Menon 2007, full paper | **36.928** | **1.200** | 0.539 |
+| SoftMenon, initial version | 36.612 | 0.524 | 0.366 |
+| Legacy custom Menon control | 36.009 | 1.020 | 0.356 |
+| Legacy + soft green only | 36.379 | 0.393 | 0.357 |
 | OpenCV bilinear | 28.914 | 0.310 | — |
 | OpenCV edge-aware | 28.927 | 0.328 | — |
 | OpenCV VNG, registration corrected | 33.509 | 6.748 | — |
 | NPP CFA reconstruction | 29.103 | — | 0.406 |
 
+Paper Menon's CPU optimization preserves every output byte. A separate
+interleaved before/after test measured **16.019 → 1.268 ms (12.63× faster)**
+with eight workers and **120.957 → 8.334 ms (14.51×)** with one worker.
+The table uses a fresh all-method CPU run; CUDA and external adapter timings
+are retained from the preceding baseline run on the same workstation.
+
 The initial SoftMenon CPU path is **18% faster than our Malvar implementation**
-in this run. CPU SIMD and GPU median optimizations preserve reconstruction
-results. Dataset splits, hashes, decoder rules, baseline validation, timing
+in the table's run. Dataset splits, hashes, decoder rules, baseline validation, timing
 scope, external adapter details, all ablation results, and reproduction commands
 are in [benchmarks.md](benchmarks.md). Historical blue-only PSNR figures have
 been withdrawn; these scores include all three channels.

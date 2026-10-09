@@ -51,8 +51,12 @@ reports the configured count, including the calling thread. A setting of one
 uses no helper threads.
 Scratch buffers are retained across frames and resized when dimensions change.
 Bilinear and Malvar write directly to the caller's output; SoftMenon fuses its
-final cleanup and output channel order. AVX512BW/VBMI and AVX2 kernels are selected
-at runtime on supported x86 CPUs, with a portable scalar fallback. Do not call `Allocate`,
+final cleanup and output channel order. Full paper Menon caches its gradients
+and runs all refinement stages in private per-worker tiles, preserving the
+reference output exactly. AVX512 and AVX2 kernels are selected at runtime on
+supported x86 CPUs, with a portable scalar fallback. Paper Menon requires
+AVX512F/BW/VL for its widest path; the median kernel also uses VBMI.
+Do not call `Allocate`,
 `Free`, or the destructor concurrently with `Process` on that instance. `Debayer` cannot be copied.
 
 `Process` returns zero on success, `-1` for null pointers, `-2` for invalid
@@ -67,6 +71,13 @@ strides and buffer guards, worker-count equivalence, algorithm/size switches,
 invalid descriptors, concurrent calls, and thread-pool
 completion after a failed task submission. `cpu_psnr_regression` additionally
 checks the demo's PSNR calculation across all three channels when OpenCV is enabled.
+
+`cpu_menon_reference` compares full paper Menon byte for byte against the
+independent implementation in `common/menon2007.hpp`. It checks tiny, odd, HD,
+random and extreme images, tile boundaries, strides and guards, worker counts,
+algorithm switches, and scalar/AVX2/AVX512 paths available on the host. Direct
+kernel checks also process arbitrary row slices in reverse order and verify
+that rows outside each slice remain untouched.
 
 Run the core tests with AddressSanitizer and UndefinedBehaviorSanitizer:
 

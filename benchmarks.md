@@ -135,13 +135,17 @@ PSNR deltas are labeled as such, while MSE and win/loss counts retain every case
   and one sample-preserving 3-by-3 chroma median. This was the winner of the
   legacy-based experiment. Paper-based ablations are a separate experiment.
 
-The full paper baseline is shared by CPU/CUDA through
-[common/menon2007.hpp](common/menon2007.hpp). Scale-144 signed integer arithmetic
+The full paper reference is defined in
+[common/menon2007.hpp](common/menon2007.hpp), which the CUDA backend executes
+directly. The optimized CPU implementation in
+[cpu/menon2007_cpu.hpp](cpu/menon2007_cpu.hpp) is checked against that unchanged
+reference. Scale-144 signed integer arithmetic
 represents its rational calculations exactly; output is clipped and rounded to
 nearest uint8, with half ties upward, only at the end. Interpolation/refinement
 use reflect101, while the posterior classifier convolution uses a **zero gradient
 halo**, matching Colour. Describing every stage as reflected would be incorrect.
-Paper scratch is 33 bytes/pixel, excluding input/output.
+The CUDA reference uses 33 bytes/pixel of paper-specific scratch, excluding
+input/output. CPU scratch is retained per worker and bounded by its tile size.
 
 The baseline matched an independent rational NumPy oracle on 182 fixtures and
 364 comparisons with pinned upstream floating calculations (maximum unrounded
@@ -223,13 +227,121 @@ measurements; Jetson and ARM CPU speed remain unmeasured. Timing JSON records
 hardware, compiler/build commands, affinity, visible GPU, seed, and round counts.
 Quality JSON additionally records NumPy, Pillow, and JPEG versions; the complete
 runner commands are given above.
-The paper Menon CPU path currently uses portable per-pixel arithmetic, while
-initial SoftMenon has hand-written SIMD. Timing compares these implementations;
-it does not establish a speed limit for an optimized paper implementation.
+Paper Menon uses a tiled CPU implementation with cached directional gradients
+and runtime SIMD dispatch. Its optimization and matched before/after experiment
+are described below. Initial SoftMenon has separate SIMD kernels.
 
 Examples use Kodak `kodim11.png` (the existing building scene) and `kodim19.png`
 (lighthouse), BGGR. Captions must use those individual full-image PSNR values,
 not the Kodak mean or interior-only scores.
+
+## Exact CPU optimization of full paper Menon
+
+The original full-paper CPU implementation at commit
+`ad2eb3642e0212473cdefd591078380c6a1c4508` executed the shared reference one pixel
+at a time, with seven full-image stage barriers. Its posterior classifier
+recomputed directional gradients for every filter tap. An instrumented profile
+at 1080p attributed about 8.48 ms of the roughly 16 ms eight-worker call to that
+classifier alone. Stage instrumentation is diagnostic; reported speedups use
+uninstrumented public API calls.
+
+The optimized implementation caches the directional gradients, keeps the seven
+paper stages in per-worker tiles, and updates only each stage's missing CFA
+class. Neighboring CFA classes needed by that stage remain unchanged. A single
+dispatch across workers completes an entire frame. Compiler-generated AVX2 and
+AVX512F/BW/VL loops handle tile arithmetic, selected at runtime with a generic
+fallback. Every refinement, classifier tie rule, boundary rule and final
+rounding rule is preserved; none of the quality ablations below is included.
+
+Output tiles are 192 by 96 pixels with a ten-pixel RAW context halo. The complete
+dependency radius is nine; artificial tile boundaries cannot affect the output
+core. Real image edges retain stage-specific reflection and zero-gradient rules.
+Initial candidates and gradients use exact quarter-DN signed 16-bit storage,
+then expand to scale 144 before color reconstruction. There is no reduced
+precision or saturation. Each active worker retains 673,920 bytes of Menon
+scratch: about 5.14 MiB at eight workers, versus 65.26 MiB of paper-specific
+scratch for the old 1080p implementation. Input/output and wrapper padding
+buffers are additional. Refinement divisions by three use an exact modular
+inverse for their provably divisible integer numerators.
+
+Matched before/after results on the workstation above, using the same 1080p
+DIV2K crop and averaging the two phase medians:
+
+| Method | Workers | Before ms | After ms | Speedup |
+|---|---:|---:|---:|---:|
+| Full paper Menon | 1 | 120.9568 | 8.3342 | **14.51×** |
+| Full paper Menon | 8 | 16.0186 | 1.2682 | **12.63×** |
+| Malvar control | 1 | 4.6125 | 4.6262 | 1.00× |
+| Malvar control | 8 | 0.6783 | 0.6738 | 1.01× |
+| Initial SoftMenon control | 1 | 3.6042 | 3.6473 | 0.99× |
+| Initial SoftMenon control | 8 | 0.6009 | 0.5943 | 1.01× |
+
+The optimized paper implementation is about 1.88 times Malvar's latency in this
+matched eight-worker run, with 2.965 dB higher mean PSNR. Control differences
+of roughly one percent are timing variation, not algorithm changes. This is
+a separate matched experiment from the original README measurement of
+15.947 ms. Raw samples, phase medians, p10/p90, source and binary hashes,
+input provenance and hardware details are retained in
+[paper-cpu-optimization.json](benchmark/results/paper-cpu-optimization.json).
+This workstation selects the AVX512 paper path. The speedup is not a measured
+claim for AVX2-only CPUs or ARM/Jetson CPUs.
+
+A separate single-core diagnostic calls each instruction path directly:
+generic fallback 24.475 ms, AVX2 19.902 ms, AVX512 8.043 ms on the same crop.
+All match the frozen old public output. These timings retain tile processing
+but exclude public wrapper padding and dispatch; they are not interchangeable
+with the public API table. The generic path may use baseline compiler
+auto-vectorization. Its samples and embedded harness are in
+[paper-cpu-isa.json](benchmark/results/paper-cpu-isa.json).
+
+Final validation found **zero changed output bytes in 1,768 reconstructions**:
+442 images, both Bayer phases, original and independently remosaiced Inset16
+cohorts, totaling 1,350,584,288 compared pixels. Mean original PSNR therefore
+remains **36.928451 dB**. All measured CFA samples and input bytes were preserved.
+The independent reference test passed 292 synthetic cases, 1,195 public API
+comparisons and 1,168 direct scalar/runtime/AVX2/AVX512 sliced comparisons with
+GCC 13.3, Clang 18.1.3, and AddressSanitizer/UndefinedBehaviorSanitizer. The final
+test inputs are deterministic across compilers. Counts, commands and hashes
+are recorded in [paper-cpu-exactness.json](benchmark/results/paper-cpu-exactness.json).
+
+To recreate the before/after experiment, download the dataset above, then build
+the pinned old checkout and the current checkout separately:
+
+```bash
+git worktree add --detach build/paper-before ad2eb3642e0212473cdefd591078380c6a1c4508
+build/benchmark-venv/bin/python build/paper-before/benchmark/run.py \
+  --build --backends cpu --output build/cpu-before
+build/benchmark-venv/bin/python benchmark/run.py \
+  --build --backends cpu --output build/cpu-after
+taskset -c 16-23 build/benchmark-venv/bin/python benchmark/compare_cpu.py \
+  --before build/cpu-before/build.json --before-root build/paper-before \
+  --after build/cpu-after/build.json --after-root . \
+  --output build/cpu-compare.json --check-small
+```
+
+The comparison runner verifies both binary and source hashes, checks the exact
+DIV2K input and decoded pixels, and randomly interleaves old/new calls for paper
+Menon, Malvar and initial SoftMenon. It checks matching output bytes before
+timing and stable output hashes afterward. Eight-worker settings use 100 rounds
+of five calls, one-worker settings use 25 rounds of one call, both after ten
+warmup rounds. The one-worker run uses the first selected physical core.
+The two unchanged algorithms are controls for run-to-run timing variation.
+
+For full-corpus reproduction, the normal quality runner records every output
+hash. Run it from both checkouts, sharing the downloaded images:
+
+```bash
+ln -s "$(pwd)/datasets" build/paper-before/datasets
+build/benchmark-venv/bin/python build/paper-before/benchmark/run.py \
+  --backends cpu --output build/cpu-before --quality --insets 0 16 --workers 8
+build/benchmark-venv/bin/python benchmark/run.py \
+  --backends cpu --output build/cpu-after --quality --insets 0 16 --workers 8
+```
+
+Match quality rows by `(method, path, inset, pattern)` and compare their
+`output_sha256_rgb` fields and integer SSE totals. The independent C++ reference
+test described in [cpu/README.md](cpu/README.md) additionally exercises synthetic
+edge cases and every supported CPU instruction path without downloading data.
 
 ## How the first candidates were selected
 

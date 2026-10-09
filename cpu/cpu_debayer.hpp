@@ -7,9 +7,12 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 #include "cpu_kernel.hpp"
 #include "threadpool.hpp"
+
+namespace menon2007_cpu { struct Workspace; }
 
 constexpr int SARONIC_DEBAYER_PAD = 4;
 constexpr int KERNEL_BLOCK_SIZE = 16;
@@ -90,8 +93,7 @@ private:
     int width = -1;
     int height = -1;
     std::unique_ptr<uint8_t[]> soft_colors;
-    std::unique_ptr<int32_t[]> menon_planes;
-    std::unique_ptr<uint8_t[]> menon_direction;
+    std::vector<std::unique_ptr<menon2007_cpu::Workspace>> menon_workspaces;
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "cpu_debayer.hpp"
 #include "chroma_median.hpp"
-#include "../common/menon2007.hpp"
+#include "menon2007_cpu.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -108,8 +108,7 @@ void Debayer::Free()
     bgr_padded_pitch = bgr_padded_width = bgr_padded_height = 0;
     width = height = 0;
     soft_colors.reset();
-    menon_planes.reset();
-    menon_direction.reset();
+    menon_workspaces.clear();
 }
 
 bool Debayer::AllocateSoftScratch()
@@ -122,13 +121,14 @@ bool Debayer::AllocateSoftScratch()
 
 bool Debayer::AllocateMenonScratch()
 {
-    if (menon_planes && menon_direction) return true;
-    const size_t pixels = static_cast<size_t>(width) * height;
-    std::unique_ptr<int32_t[]> planes(new (std::nothrow) int32_t[pixels * 8]);
-    std::unique_ptr<uint8_t[]> direction(new (std::nothrow) uint8_t[pixels]);
-    if (!planes || !direction) return false;
-    menon_planes = std::move(planes);
-    menon_direction = std::move(direction);
+    const size_t tasks = std::min(worker_count, static_cast<size_t>((height + 31) / 32));
+    if (menon_workspaces.size() == tasks) return true;
+    std::vector<std::unique_ptr<menon2007_cpu::Workspace>> workspaces(tasks);
+    for (auto& workspace : workspaces) {
+        workspace.reset(new (std::nothrow) menon2007_cpu::Workspace);
+        if (!workspace) return false;
+    }
+    menon_workspaces = std::move(workspaces);
     return true;
 }
 
@@ -197,29 +197,15 @@ int Debayer::ProcessImpl(const raw_image_t* input, bgr_image_t* output, int diag
             });
         } else if (!diagnostic && algorithm == SARONIC_DEBAYER_MENON2007) {
             if (!AllocateMenonScratch()) return -3;
-            const size_t pixels = static_cast<size_t>(width) * height;
-            const libdebayer_menon2007::Buffers buffers{
-                raw_origin, static_cast<size_t>(raw_padded_pitch),
-                output->bgr_data, static_cast<size_t>(output_pitch), width, height, rggb,
-                menon_planes.get(), menon_planes.get() + pixels,
-                menon_planes.get() + pixels * 2, menon_planes.get() + pixels * 5,
-                menon_direction.get()};
-            // Each full-image barrier publishes the previous stage's planes.
-            // Name each stage directly so the scalar core can inline its stencil.
-#define MENON_STAGE(name) \
-            RunRows(height, 1, [=](int begin, int end) { \
-                for (int y = begin; y < end; ++y) \
-                    for (int x = 0; x < width; ++x) \
-                        libdebayer_menon2007::name(buffers, x, y); \
-            })
-            MENON_STAGE(stage_green);
-            MENON_STAGE(stage_decision);
-            MENON_STAGE(stage_colors_at_green);
-            MENON_STAGE(stage_opposite);
-            MENON_STAGE(stage_refine_green);
-            MENON_STAGE(stage_refine_colors_at_green);
-            MENON_STAGE(stage_refine_opposite_output);
-#undef MENON_STAGE
+            // This partition is identical to RunRows(height, 1). Each task
+            // reuses one private tile workspace and publishes disjoint rows.
+            const int task_rows = static_cast<int>(
+                (height + menon_workspaces.size() - 1) / menon_workspaces.size());
+            RunRows(height, 1, [=](int begin, int end) {
+                menon2007_cpu::process_rows(*menon_workspaces[begin / task_rows], raw_origin,
+                    static_cast<size_t>(raw_padded_pitch), output->bgr_data, static_cast<size_t>(output_pitch),
+                    width, height, rggb, begin, end);
+            });
         } else {
             const bool soft = diagnostic != 1;
             if (soft && !AllocateSoftScratch()) return -3;

@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "purpose": "Exact-output evidence for the optimized full-paper Menon2007 CPU implementation; no algorithm-quality change",
+  "dataset_manifest": {
+    "path": "benchmark/datasets.json",
+    "sha256": "aa364cbc36ffb7914422880f8477c74f191d796b64f3a9dc65156c9f0eb1838c",
+    "images": 442,
+    "selection": "Kodak24, McMaster18, Urban100 SRF2 HR100, DIV2K validation HR100, BSDS500 test200",
+    "stored_and_decoded_hashes_verified": true
+  },
+  "corpus": {
+    "cohorts": [
+      "original",
+      "inset16 independently remosaiced"
+    ],
+    "phases": [
+      "RGGB",
+      "BGGR"
+    ],
+    "outputs_compared": 1768,
+    "pixels_compared": 1350584288,
+    "input_unchanged": 1768,
+    "measured_cfa_checks": 14144,
+    "mismatched_outputs": 0,
+    "maximum_absolute_channel_difference": 0,
+    "output_pairs_by_dataset": {
+      "bsds500": 800,
+      "div2k": 400,
+      "kodak24": 96,
+      "mcmaster": 72,
+      "urban100": 400
+    },
+    "raw_report_sha256": "ef6042ab3c2bdba2bc781421877ddcdad9538cb3b5860171a7cc764c893f57b5",
+    "comparison_script_sha256": "3a57453112ac3699287c8f97899a0591c6ef88ddc420e8acc02662cdd3c9117f",
+    "command": "taskset -c 0-7 python3 validation/compare_paper_cpu_corpus.py --after-build build/paper-cpu-optimization/final/build.json --workers 8 --insets 0 16",
+    "workers": 8,
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "numpy": "1.26.4",
+    "pillow": "10.2.0",
+    "libjpeg": "8.0"
+  },
+  "before": {
+    "source_commit": "ad2eb3642e0212473cdefd591078380c6a1c4508",
+    "library_sha256": "f2d1eb5fd496dfb9ad3fb1fdf46b41db6d54a7a53fa742b8a0d6842cb7048feb",
+    "source_sha256": {
+      "benchmark/bridge_cpu.cpp": "4dc4977208a35dd158f3ff3a03f77174d09b5347c3e791db990c9843a7a0bce8",
+      "benchmark/run.py": "8f8fa38a9902731bc56d8c35370555d6db02a775f4258748771589b69f9f0134",
+      "common/COLOUR_DEMOSAICING_LICENSE": "62f431963cc2e7387c118c0798bcb323a1e0c0129b28265099ab74bf2a0c04af",
+      "common/menon2007.hpp": "1e60331990aba67b223f1568ab36178f368a6229d1d48d1de4f1c3e0f812ee0f",
+      "cpu/CMakeLists.txt": "b236861f23936d59229f38a5a4613296e597db9cd430162032b3ff593e62c286",
+      "cpu/README.md": "089a5f6081a9981c187b20aeb198fe23c1a1c2e3d7f44b4b10c22e7ea7f2d864",
+      "cpu/chroma_median.hpp": "595d64fd5daebe08b5a36dd401199c8e0bfed4b5befd119fad2baefd8b7e7fb9",
+      "cpu/concurrentqueue.h": "51f828e79f78aba192dbb78c2898da21800ca124a9c5f1c7826525b2eafce723",
+      "cpu/cpu_debayer.cpp": "d5d50196b5d6d4b089c9b5599cc0e6cdc59d4f4941ad8969aec278428e1b4521",
+      "cpu/cpu_debayer.hpp": "7357c436a40da807301d186b9ec263655d458dccc10fd0dd7e716cd036e2bfea",
+      "cpu/cpu_kernel.cpp": "7793fc0871b188406b7330d69eca3cc1c8771e8192ee95ef637235c4aa6be7d8",
+      "cpu/cpu_kernel.hpp": "142dd36d110276a89cfd506ffab7ff4b1146d0cd6cd0d41ebb41f23f09a821c6",
+      "cpu/main.cpp": "2d24cbad87bbc307da5387176dc7142965d562aca4915d05f2cceb4e6a605fc0",
+      "cpu/tests/cpu_regression.cpp": "79c246c9f1779452c03c70867f8257ec0a3e18878803649b5426b3eebf4d2c56",
+      "cpu/tests/psnr_regression.cpp": "4aaf067fdba2eb029597e81deb897a220523e04a10de76f5dd1c3e5785d5b1f5",
+      "cpu/threadpool.cpp": "ba65f00a02d70c620e480ac63d9282ff83e8d9f3958baac578a6ff4bfbbb06d7",
+      "cpu/threadpool.hpp": "6402d84488cc8b3d8e2deb9aa66f0e072457ff588cfc14e4b5d994f6e9f612db"
+    }
+  },
+  "after": {
+    "library_sha256": "d152af647b0be95007954d863d4aa86c456d0f1200dc1ee9ed9f2054ef732bfb",
+    "source_sha256": {
+      "benchmark/bridge_cpu.cpp": "4dc4977208a35dd158f3ff3a03f77174d09b5347c3e791db990c9843a7a0bce8",
+      "cpu/cpu_debayer.cpp": "17971de225f2c7d26223b8efb31da84cfdb34c6e4e18fc325fd49cbb1a0ab578",
+      "cpu/cpu_kernel.cpp": "7793fc0871b188406b7330d69eca3cc1c8771e8192ee95ef637235c4aa6be7d8",
+      "cpu/threadpool.cpp": "ba65f00a02d70c620e480ac63d9282ff83e8d9f3958baac578a6ff4bfbbb06d7",
+      "cpu/chroma_median.hpp": "595d64fd5daebe08b5a36dd401199c8e0bfed4b5befd119fad2baefd8b7e7fb9",
+      "cpu/cpu_debayer.hpp": "6470a4de98ba93427b05fe970befc79918af7dc150f5eb4c16f1dded5fb3e703",
+      "cpu/cpu_kernel.hpp": "142dd36d110276a89cfd506ffab7ff4b1146d0cd6cd0d41ebb41f23f09a821c6",
+      "cpu/menon2007_cpu.hpp": "0a678173fafbc9a795e0620f060d80ae935cbe5e3e283a270a0f06781432cca8",
+      "cpu/threadpool.hpp": "6402d84488cc8b3d8e2deb9aa66f0e072457ff588cfc14e4b5d994f6e9f612db",
+      "common/menon2007.hpp": "1e60331990aba67b223f1568ab36178f368a6229d1d48d1de4f1c3e0f812ee0f"
+    },
+    "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "build_command": [
+      "g++",
+      "-std=c++17",
+      "-O3",
+      "-shared",
+      "-fPIC",
+      "-fvisibility=hidden",
+      "-pthread",
+      "/home/catid/libdebayer/benchmark/bridge_cpu.cpp",
+      "/home/catid/libdebayer/cpu/cpu_debayer.cpp",
+      "/home/catid/libdebayer/cpu/cpu_kernel.cpp",
+      "/home/catid/libdebayer/cpu/threadpool.cpp",
+      "-o",
+      "/home/catid/libdebayer/build/paper-cpu-optimization/final/libraries/cpu.so"
+    ]
+  },
+  "independent_reference_tests": {
+    "passed": true,
+    "checks": {
+      "distinct_images": 292,
+      "public_exact_outputs": 1195,
+      "direct_sliced_exact_outputs": 1168,
+      "public_pixels_compared": 28744516
+    },
+    "phases": [
+      "RGGB",
+      "BGGR"
+    ],
+    "worker_counts": [
+      1,
+      2,
+      4,
+      7
+    ],
+    "direct_paths": [
+      "generic scalar fallback",
+      "runtime dispatch",
+      "AVX2",
+      "AVX512F/BW/VL"
+    ],
+    "guards": "Independent unaligned pitches and prefix/suffix/row sentinels; input unchanged; direct row slices leave all other rows untouched",
+    "cases": "Tiny, odd, SIMD boundaries, current tile width/height +/-1 and 2*tile+1, HD1920x1080; zero/white/constantRGB/ramps/extreme patterns/random; reverse odd row slices, resize and algorithm switches",
+    "expected_output": "Independent execution of unchanged common/menon2007.hpp; no CPU optimized functions generate expected output",
+    "source_sha256": {
+      "common/menon2007.hpp": "1e60331990aba67b223f1568ab36178f368a6229d1d48d1de4f1c3e0f812ee0f",
+      "cpu/menon2007_cpu.hpp": "0a678173fafbc9a795e0620f060d80ae935cbe5e3e283a270a0f06781432cca8",
+      "cpu/cpu_debayer.cpp": "17971de225f2c7d26223b8efb31da84cfdb34c6e4e18fc325fd49cbb1a0ab578",
+      "cpu/cpu_debayer.hpp": "6470a4de98ba93427b05fe970befc79918af7dc150f5eb4c16f1dded5fb3e703",
+      "cpu/tests/menon_reference.cpp": "e7d9544383afe6e6cb8f0b64b73d4c0f60bb7f72ef2b2b17024d0ee8f029fe39",
+      "cpu/CMakeLists.txt": "54f164d6797b3b4b3e16360350ab3ff8f7a4e1831f4d959ca3104a235cd05b92"
+    },
+    "runs": {
+      "gcc_release": {
+        "exit_code": 0,
+        "output": "Paper CPU reference: 292 distinct cases, 1195 exact public comparisons, 1168 direct sliced comparisons, 28744516 public compared pixels",
+        "commands": [
+          "cmake -S cpu -B build/cpu-paper-reference -DCMAKE_BUILD_TYPE=Release -DDEBAYER_CPU_BUILD_DEMO=OFF -DBUILD_TESTING=ON",
+          "cmake --build build/cpu-paper-reference --target cpu_menon_reference -j4",
+          "taskset -c 48-55 build/cpu-paper-reference/cpu_menon_reference"
+        ],
+        "log_sha256": "f8edbb61e52110100ceaa37e11e50900f3280aca97ace9a15b3115d8eff83c3f",
+        "executable_sha256": "015f2c23a8553d3a74cf6b15fdffcf1e3e9a2acaf5eef1a30de1c9093a49b7f7"
+      },
+      "clang_release": {
+        "exit_code": 0,
+        "output": "Paper CPU reference: 292 distinct cases, 1195 exact public comparisons, 1168 direct sliced comparisons, 28744516 public compared pixels",
+        "commands": [
+          "cmake -S cpu -B build/cpu-paper-clang -DCMAKE_BUILD_TYPE=Release -DDEBAYER_CPU_BUILD_DEMO=OFF -DCMAKE_CXX_COMPILER=clang++",
+          "cmake --build build/cpu-paper-clang --target cpu_menon_reference -j4",
+          "taskset -c 48-55 build/cpu-paper-clang/cpu_menon_reference"
+        ],
+        "log_sha256": "f8edbb61e52110100ceaa37e11e50900f3280aca97ace9a15b3115d8eff83c3f",
+        "executable_sha256": "8fbb30343ae9307003da27191001bbf8effad3505f4bb71382143529b3cf089f"
+      },
+      "gcc_address_undefined": {
+        "exit_code": 0,
+        "output": "Paper CPU reference: 292 distinct cases, 1195 exact public comparisons, 1168 direct sliced comparisons, 28744516 public compared pixels",
+        "commands": [
+          "cmake -S cpu -B build/cpu-paper-reference-sanitize -DDEBAYER_CPU_BUILD_DEMO=OFF -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS='-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer' -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined'",
+          "cmake --build build/cpu-paper-reference-sanitize --target cpu_menon_reference -j4",
+          "taskset -c 32-39 env ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 build/cpu-paper-reference-sanitize/cpu_menon_reference"
+        ],
+        "log_sha256": "f8edbb61e52110100ceaa37e11e50900f3280aca97ace9a15b3115d8eff83c3f",
+        "executable_sha256": "2e4460b7a0cb7b28f3709f6f69bdde328afdb6bb4af9059c515927890886d4f9"
+      }
+    },
+    "compilers": {
+      "gcc": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+      "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)"
+    },
+    "sanitizer_compile_flags": "-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -O2 -g -DNDEBUG -std=gnu++17",
+    "sanitizer_diagnostics": "No ASan, UBSan or LeakSanitizer diagnostics; halt_on_error and detect_leaks enabled"
+  },
+  "reproduction_note": "The committed cpu_menon_reference CTest needs no dataset or Python dependencies. Large historical binaries, comparison scripts and per-image reports are local artifacts. Recreate old CPU at before.source_commit and current CPU separately; benchmark/run.py --quality --insets 0 16 emits full per-output RGB hashes for equivalent comparison."
+}
